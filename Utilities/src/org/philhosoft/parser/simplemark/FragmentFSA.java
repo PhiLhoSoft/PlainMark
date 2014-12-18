@@ -9,32 +9,32 @@ import org.philhosoft.parser.StringWalker;
 
 /**
  * Finite State Automaton for parsing a line made of fragments of text.
+ * <p>
+ * Made to be complementary of a line parser, which will feed this automaton with a single line.
+ * If a newline is found in the given text, the automaton ends.
  */
-public class FragmentFSA extends FiniteStateAutomaton<Character>
+public class FragmentFSA extends FiniteStateAutomaton<StringWalker>
 {
 	private enum MarkupParsingState implements State
 	{ INITIAL, PLAIN_TEXT, END }
 
 	private StringWalker walker;
 
-	private FragmentFSA(String markup)
+	private FragmentFSA(StringWalker walker)
 	{
-		walker = new StringWalker(markup);
+		this.walker = walker;
 		addStates();
 	}
 
 	@Override
-	protected Character provide()
+	protected StringWalker provide()
 	{
-		return walker.current();
+		return walker;
 	}
 
-	public static Fragment parse(String markup)
+	public static Fragment parse(StringWalker walker)
 	{
-		if (markup == null || markup.isEmpty())
-			return new PlainTextFragment("");
-
-		FragmentFSA parser = new FragmentFSA(markup);
+		FragmentFSA parser = new FragmentFSA(walker);
 		return parser.parse();
 	}
 
@@ -70,31 +70,29 @@ public class FragmentFSA extends FiniteStateAutomaton<Character>
 	}
 
 
-	private class InitialAction implements Transition<Character>
+	private class InitialAction implements Transition<StringWalker>
 	{
 		@Override
-		public State evaluate(Character c)
+		public State evaluate(StringWalker walker)
 		{
 			return MarkupParsingState.PLAIN_TEXT;
 		}
 	}
-	private class PlainTextAction implements Transition<Character>
+	private class PlainTextAction implements Transition<StringWalker>
 	{
 		@Override
-		public State evaluate(Character c)
+		public State evaluate(StringWalker walker)
 		{
-//			return MarkupParsingState.BLABLA;
-//
-//			if (c == '.')
-//				return MarkupParsingState.BLABLA;
-//
+			if (walker.atLineEnd())
+				return MarkupParsingState.END;
+
 			return MarkupParsingState.PLAIN_TEXT;
 		}
 	}
-	private class EndAction implements Transition<Character>
+	private class EndAction implements Transition<StringWalker>
 	{
 		@Override
-		public State evaluate(Character c)
+		public State evaluate(StringWalker walker)
 		{
 			return MarkupParsingState.END;
 		}
