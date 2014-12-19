@@ -1,8 +1,8 @@
 package org.philhosoft.parser.simplemark;
 
-import org.philhosoft.ast.formattedtext.Block;
-import org.philhosoft.ast.formattedtext.BlockType;
-import org.philhosoft.ast.formattedtext.TypedBlock;
+import org.philhosoft.formattedtext.ast.Block;
+import org.philhosoft.formattedtext.ast.BlockType;
+import org.philhosoft.formattedtext.ast.TypedBlock;
 import org.philhosoft.fsa.FiniteStateAutomaton;
 import org.philhosoft.fsa.State;
 import org.philhosoft.fsa.Transition;

@@ -1,7 +1,7 @@
 package org.philhosoft.parser.simplemark;
 
-import org.philhosoft.ast.formattedtext.Fragment;
-import org.philhosoft.ast.formattedtext.PlainTextFragment;
+import org.philhosoft.formattedtext.ast.Fragment;
+import org.philhosoft.formattedtext.ast.PlainTextFragment;
 import org.philhosoft.fsa.FiniteStateAutomaton;
 import org.philhosoft.fsa.State;
 import org.philhosoft.fsa.Transition;
@@ -43,10 +43,11 @@ public class FragmentFSA extends FiniteStateAutomaton<StringWalker>
 		Fragment fragment = new PlainTextFragment("");
 		StringBuilder sb = new StringBuilder();
 
-		start(MarkupParsingState.INITIAL);
-		while (walker.hasMore())
+		MarkupParsingState state = MarkupParsingState.INITIAL;
+		start(state);
+		while (walker.hasMore() && state != MarkupParsingState.END)
 		{
-			MarkupParsingState state = (MarkupParsingState) next();
+			state = (MarkupParsingState) next();
 			if (state == MarkupParsingState.PLAIN_TEXT)
 			{
 				sb.append(walker.current());
