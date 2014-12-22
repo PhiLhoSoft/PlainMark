@@ -13,156 +13,41 @@ import org.philhosoft.formattedtext.ast.TypedBlock;
 
 public class HTMLVisitor implements MarkupVisitor<StringBuilder>
 {
-	private FragmentDecoration.Visitor<StringBuilder> fragmentStartVisitor = new FragmentDecoration.Visitor<StringBuilder>()
+	private FragmentDecoration.Visitor<StringBuilder> fragmentStartVisitor = new FragmentStartVisitor();
+	private FragmentDecoration.Visitor<StringBuilder> fragmentEndVisitor = new FragmentEndVisitor();
+	private BlockType.Visitor<StringBuilder> blockStartVisitor = new BlockStartVisitor();
+	private BlockType.Visitor<StringBuilder> blockEndVisitor = new BlockEndVisitor();
+
+	/**
+	 * Allows overriding the default fragment visitors.
+	 */
+	public void setFragmentVisitors(
+			FragmentDecoration.Visitor<StringBuilder> fragmentStartVisitor,
+			FragmentDecoration.Visitor<StringBuilder> fragmentEndVisitor)
 	{
-		@Override
-		public void visitStrong(StringBuilder output)
-		{
-			output.append("<strong>");
-		}
-		@Override
-		public void visitEmphasis(StringBuilder output)
-		{
-			output.append("<em>");
-		}
-		@Override
-		public void visitDelete(StringBuilder output)
-		{
-			output.append("<del>");
-		}
-		@Override
-		public void visitCode(StringBuilder output)
-		{
-			output.append("<code>");
-		}
-	};
-	private FragmentDecoration.Visitor<StringBuilder> fragmentEndVisitor = new FragmentDecoration.Visitor<StringBuilder>()
+		this.fragmentStartVisitor = fragmentStartVisitor;
+		this.fragmentEndVisitor = fragmentEndVisitor;
+	}
+	/**
+	 * Allows overriding the default block visitors.
+	 */
+	public void setBlockVisitors(
+			BlockType.Visitor<StringBuilder> blockStartVisitor,
+			BlockType.Visitor<StringBuilder> blockEndVisitor)
 	{
-		@Override
-		public void visitStrong(StringBuilder output)
-		{
-			output.append("</strong>");
-		}
-		@Override
-		public void visitEmphasis(StringBuilder output)
-		{
-			output.append("</em>");
-		}
-		@Override
-		public void visitDelete(StringBuilder output)
-		{
-			output.append("</del>");
-		}
-		@Override
-		public void visitCode(StringBuilder output)
-		{
-			output.append("</code>");
-		}
-	};
-	private BlockType.Visitor<StringBuilder> blockStartVisitor = new BlockType.Visitor<StringBuilder>()
-	{
-		@Override
-		public void visitDocument(StringBuilder output)
-		{
-			output.append("<div>");
-		}
-		@Override
-		public void visitParagraph(StringBuilder output)
-		{
-			output.append("<p>");
-		}
-		@Override
-		public void visitTitle1(StringBuilder output)
-		{
-			output.append("<h3>");
-		}
-		@Override
-		public void visitTitle2(StringBuilder output)
-		{
-			output.append("<h4>");
-		}
-		@Override
-		public void visitTitle3(StringBuilder output)
-		{
-			output.append("<h5>");
-		}
-		@Override
-		public void visitUnorderedList(StringBuilder output)
-		{
-			output.append("<ul>");
-		}
-		@Override
-		public void visitOrderedList(StringBuilder output)
-		{
-			output.append("<ol>");
-		}
-		@Override
-		public void visitListItem(StringBuilder output)
-		{
-			output.append("<li>");
-		}
-		@Override
-		public void visitCode(StringBuilder output)
-		{
-			output.append("<pre><code>");
-		}
-	};
-	private BlockType.Visitor<StringBuilder> blockStartVisitor = new BlockType.Visitor<StringBuilder>()
-	{
-		@Override
-		public void visitDocument(StringBuilder output)
-		{
-			output.append("</div>");
-		}
-		@Override
-		public void visitParagraph(StringBuilder output)
-		{
-			output.append("</p>");
-		}
-		@Override
-		public void visitTitle1(StringBuilder output)
-		{
-			output.append("</h3>");
-		}
-		@Override
-		public void visitTitle2(StringBuilder output)
-		{
-			output.append("</h4>");
-		}
-		@Override
-		public void visitTitle3(StringBuilder output)
-		{
-			output.append("</h5>");
-		}
-		@Override
-		public void visitUnorderedList(StringBuilder output)
-		{
-			output.append("</ul>");
-		}
-		@Override
-		public void visitOrderedList(StringBuilder output)
-		{
-			output.append("</ol>");
-		}
-		@Override
-		public void visitListItem(StringBuilder output)
-		{
-			output.append("</li>");
-		}
-		@Override
-		public void visitCode(StringBuilder output)
-		{
-			output.append("</code></pre>");
-		}
-	};
+		this.blockStartVisitor = blockStartVisitor;
+		this.blockEndVisitor = blockEndVisitor;
+	}
 
 	@Override
 	public void visit(DecoratedFragment fragment, StringBuilder output)
 	{
+		fragment.getDecoration().accept(fragmentStartVisitor, output);
 		for (Fragment f : fragment.getFragments())
 		{
 			f.accept(this, output);
 		}
+		fragment.getDecoration().accept(fragmentEndVisitor, output);
 	}
 
 	@Override
@@ -183,12 +68,16 @@ public class HTMLVisitor implements MarkupVisitor<StringBuilder>
 	}
 
 	@Override
-	public void visit(TypedBlock typedBlock, StringBuilder output)
+	public void visit(TypedBlock block, StringBuilder output)
 	{
-		for (Block b : typedBlock.getBlocks())
+		output.append("\n");
+		block.getType().accept(blockStartVisitor, output);
+		for (Block b : block.getBlocks())
 		{
 			b.accept(this, output);
 		}
+		block.getType().accept(blockEndVisitor, output);
+		output.append("\n");
 	}
 
 	@Override
@@ -198,6 +87,6 @@ public class HTMLVisitor implements MarkupVisitor<StringBuilder>
 		{
 			f.accept(this, output);
 		}
-		output.append("\n");
+//		output.append("<br>\n");
 	}
 }
