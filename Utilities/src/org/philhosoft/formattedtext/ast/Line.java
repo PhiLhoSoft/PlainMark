@@ -3,6 +3,10 @@ package org.philhosoft.formattedtext.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A line is created each time the parser finds a start of line.<br>
+ * It contains a series of fragments, each with their own decoration, if any.
+ */
 public class Line implements Block
 {
 	private List<Fragment> fragments = new ArrayList<Fragment>();
@@ -10,9 +14,14 @@ public class Line implements Block
 	public Line()
 	{
 	}
-	public Line(String text)
+	public Line(Fragment fragment)
 	{
-		fragments.add(new PlainTextFragment(text));
+		fragments.add(fragment);
+	}
+
+	public void add(Fragment fragment)
+	{
+		fragments.add(fragment);
 	}
 
 	public List<Fragment> getFragments()

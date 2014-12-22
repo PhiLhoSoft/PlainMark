@@ -6,7 +6,7 @@ import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.ast.MarkupVisitor;
-import org.philhosoft.formattedtext.ast.PlainTextFragment;
+import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 
 public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
@@ -21,7 +21,7 @@ public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
 	}
 
 	@Override
-	public void visit(PlainTextFragment fragment, StringBuilder output)
+	public void visit(TextFragment fragment, StringBuilder output)
 	{
 		output.append(fragment.getText());
 	}
@@ -29,7 +29,10 @@ public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
 	@Override
 	public void visit(LinkFragment fragment, StringBuilder output)
 	{
-		fragment.getTextFragment().accept(this, output);
+		for (Fragment f : fragment.getFragments())
+		{
+			f.accept(this, output);
+		}
 		output.append(" - ").append(fragment.getUrl());
 	}
 
@@ -39,7 +42,6 @@ public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
 		for (Block b : typedBlock.getBlocks())
 		{
 			b.accept(this, output);
-			output.append("\n");
 		}
 	}
 
@@ -50,5 +52,6 @@ public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
 		{
 			f.accept(this, output);
 		}
+		output.append("\n");
 	}
 }

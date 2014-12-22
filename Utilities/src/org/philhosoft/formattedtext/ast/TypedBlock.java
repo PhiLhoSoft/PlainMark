@@ -13,6 +13,11 @@ public class TypedBlock implements Block
 		this.type = type;
 	}
 
+	public void add(Block block)
+	{
+		blocks.add(block);
+	}
+
 	public BlockType getType()
 	{
 		return type;

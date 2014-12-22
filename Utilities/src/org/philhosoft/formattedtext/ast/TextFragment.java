@@ -1,10 +1,14 @@
 package org.philhosoft.formattedtext.ast;
 
-public class PlainTextFragment implements Fragment
+/**
+ * A fragment with only text in it.<br>
+ * Leaf of a tree of decorated fragments.
+ */
+public class TextFragment implements Fragment
 {
 	private String text;
 
-	public PlainTextFragment(String text)
+	public TextFragment(String text)
 	{
 		this.text = text;
 	}
@@ -30,9 +34,9 @@ public class PlainTextFragment implements Fragment
 	{
 		if (obj == this)
 			return true;
-		if (!(obj instanceof PlainTextFragment))
+		if (!(obj instanceof TextFragment))
 			return false;
-		return ((PlainTextFragment) obj).text.equals(this.text);
+		return ((TextFragment) obj).text.equals(this.text);
 	}
 	@Override
 	public String toString()

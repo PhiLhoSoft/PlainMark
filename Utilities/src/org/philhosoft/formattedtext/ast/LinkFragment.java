@@ -1,23 +1,31 @@
 package org.philhosoft.formattedtext.ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LinkFragment implements Fragment
 {
-	private Fragment textFragment; // source anchor
+	private List<Fragment> fragments = new ArrayList<Fragment>(); // source anchor
 	private String url; // destination anchor
 
 	public LinkFragment(String text, String url)
 	{
-		this(new PlainTextFragment(text), url);
+		this(new TextFragment(text), url);
 	}
-	public LinkFragment(Fragment textFragment, String url)
+	public LinkFragment(Fragment fragment, String url)
 	{
-		this.textFragment = textFragment;
+		this.fragments.add(fragment);
 		this.url = url;
 	}
 
-	public Fragment getTextFragment()
+	public void add(Fragment newFragment)
 	{
-		return textFragment;
+		fragments.add(newFragment);
+	}
+
+	public List<Fragment> getFragments()
+	{
+		return fragments;
 	}
 	public String getUrl()
 	{
@@ -33,7 +41,7 @@ public class LinkFragment implements Fragment
 	@Override
 	public int hashCode()
 	{
-		return textFragment.hashCode() * 31 + url.hashCode();
+		return fragments.hashCode() * 31 + url.hashCode();
 	}
 	@Override
 	public boolean equals(Object obj)
@@ -43,11 +51,11 @@ public class LinkFragment implements Fragment
 		if (!(obj instanceof LinkFragment))
 			return false;
 		LinkFragment uf = (LinkFragment) obj;
-		return uf.textFragment.equals(this.textFragment) && uf.url.equals(this.url);
+		return uf.fragments.equals(this.fragments) && uf.url.equals(this.url);
 	}
 	@Override
 	public String toString()
 	{
-		return "LinkFragment[" + textFragment + "](" + url + ")";
+		return "LinkFragment[" + fragments + "](" + url + ")";
 	}
 }

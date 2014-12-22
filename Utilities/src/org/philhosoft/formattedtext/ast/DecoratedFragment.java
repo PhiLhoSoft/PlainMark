@@ -3,7 +3,9 @@ package org.philhosoft.formattedtext.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * A decorated fragment
+ */
 public class DecoratedFragment implements Fragment
 {
 	private FragmentDecoration decoration;
@@ -12,6 +14,17 @@ public class DecoratedFragment implements Fragment
 	public DecoratedFragment(FragmentDecoration decoration)
 	{
 		this.decoration = decoration;
+	}
+
+	public DecoratedFragment(FragmentDecoration decoration, String firstText)
+	{
+		this(decoration);
+		fragments.add(new TextFragment(firstText));
+	}
+
+	public void add(Fragment fragment)
+	{
+		fragments.add(fragment);
 	}
 
 	public FragmentDecoration getDecoration()

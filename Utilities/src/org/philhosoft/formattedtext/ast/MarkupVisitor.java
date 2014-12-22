@@ -4,7 +4,7 @@ public interface MarkupVisitor<T>
 {
 	void visit(DecoratedFragment fragment, T output);
 
-	void visit(PlainTextFragment fragment, T output);
+	void visit(TextFragment fragment, T output);
 
 	void visit(LinkFragment fragment, T output);
 
