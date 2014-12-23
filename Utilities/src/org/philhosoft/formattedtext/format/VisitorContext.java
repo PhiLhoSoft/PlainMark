@@ -9,12 +9,15 @@ public interface VisitorContext
 {
 	VisitorContext append(String out);
 
+	String asString();
+
 //	MarkedText getParent();
 //	void setParent(MarkedText parent);
 
 	boolean isFirst();
 	boolean isLast();
 
-	void setFirst(boolean first);
-	void setLast(boolean last);
+	void push(String which, boolean first, boolean last);
+	void setFirstLast(String which, boolean first, boolean last);
+	void pop();
 }

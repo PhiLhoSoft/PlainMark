@@ -44,10 +44,13 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	public void visit(DecoratedFragment fragment, VisitorContext context)
 	{
 //		context.setParent(fragment);
+		context.push(fragment.getDecoration().name(), true, fragment.getFragments().size() < 2);
 
 		fragment.getDecoration().accept(fragmentStartVisitor, context);
-		VisitorHelper.visitFragments(fragment.getFragments(), this, context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, "[[" + fragment.getDecoration().name() + "]]", context);
 		fragment.getDecoration().accept(fragmentEndVisitor, context);
+
+		context.pop();
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	public void visit(LinkFragment fragment, VisitorContext context)
 	{
 		context.append("<a href='").append(fragment.getUrl()).append("'>");
-		VisitorHelper.visitFragments(fragment.getFragments(), this, context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, "Link", context);
 		context.append("</a>");
 	}
 
@@ -69,23 +72,39 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	{
 //		context.setParent(block);
 
-		context.append("\n");
+		if (!context.isFirst())
+		{
+			context.append("\n");
+		}
+		context.push(block.getType().name(), true, block.getBlocks().size() < 2);
+
 		block.getType().accept(blockStartVisitor, context);
-		VisitorHelper.visitBlocks(block.getBlocks(), this, context);
+		VisitorHelper.visitBlocks(block.getBlocks(), this, "[[" + block.getType().name() + "]]", context);
 		block.getType().accept(blockEndVisitor, context);
+
+		context.pop();
 		if (context.isLast())
 		{
-			context.append("[Last Block]\n");
+//			context.append("[Last Block]\n");
+			context.append("\n");
 		}
 	}
 
 	@Override
 	public void visit(Line line, VisitorContext context)
 	{
-		VisitorHelper.visitFragments(line.getFragments(), this, context);
+		context.push("Line", true, line.getFragments().size() < 2);
+
+		VisitorHelper.visitFragments(line.getFragments(), this, "[[Line]]", context);
+
+		context.pop();
 		if (!context.isLast())
 		{
 			context.append("<br>\n");
+		}
+		else
+		{
+			context.append("\n");
 		}
 	}
 }

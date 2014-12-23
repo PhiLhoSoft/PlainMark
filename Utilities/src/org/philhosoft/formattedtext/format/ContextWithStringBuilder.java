@@ -12,8 +12,14 @@ public class ContextWithStringBuilder extends BaseVisitorContext
 	}
 
 	@Override
-	public String toString()
+	public String asString()
 	{
 		return builder.toString();
+	}
+
+	@Override
+	public String toString()
+	{
+		return builder.toString() + " // " + firstLastList;
 	}
 }
