@@ -1,57 +1,43 @@
 package org.philhosoft.formattedtext.format;
 
-import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
-import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.ast.MarkupVisitor;
 import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 
-public class PlainTextVisitor implements MarkupVisitor<StringBuilder>
+public class PlainTextVisitor implements MarkupVisitor<VisitorContext>
 {
 	@Override
-	public void visit(DecoratedFragment fragment, StringBuilder output)
+	public void visit(DecoratedFragment fragment, VisitorContext context)
 	{
-		for (Fragment f : fragment.getFragments())
-		{
-			f.accept(this, output);
-		}
+		VisitorHelper.visitFragments(fragment.getFragments(), this, context);
 	}
 
 	@Override
-	public void visit(TextFragment fragment, StringBuilder output)
+	public void visit(TextFragment fragment, VisitorContext context)
 	{
-		output.append(fragment.getText());
+		context.append(fragment.getText());
 	}
 
 	@Override
-	public void visit(LinkFragment fragment, StringBuilder output)
+	public void visit(LinkFragment fragment, VisitorContext context)
 	{
-		for (Fragment f : fragment.getFragments())
-		{
-			f.accept(this, output);
-		}
-		output.append(" - ").append(fragment.getUrl());
+		VisitorHelper.visitFragments(fragment.getFragments(), this, context);
+		context.append(" - ").append(fragment.getUrl());
 	}
 
 	@Override
-	public void visit(TypedBlock typedBlock, StringBuilder output)
+	public void visit(TypedBlock block, VisitorContext context)
 	{
-		for (Block b : typedBlock.getBlocks())
-		{
-			b.accept(this, output);
-		}
+		VisitorHelper.visitBlocks(block.getBlocks(), this, context);
 	}
 
 	@Override
-	public void visit(Line line, StringBuilder output)
+	public void visit(Line line, VisitorContext context)
 	{
-		for (Fragment f : line.getFragments())
-		{
-			f.accept(this, output);
-		}
-		output.append("\n");
+		VisitorHelper.visitFragments(line.getFragments(), this, context);
+		context.append("\n");
 	}
 }

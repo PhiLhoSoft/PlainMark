@@ -2,51 +2,51 @@ package org.philhosoft.formattedtext.format;
 
 import org.philhosoft.formattedtext.ast.BlockType;
 
-public class BlockStartVisitor implements BlockType.Visitor<StringBuilder>
+public class BlockStartVisitor implements BlockType.Visitor<VisitorContext>
 {
 	@Override
-	public void visitDocument(StringBuilder output)
+	public void visitDocument(VisitorContext context)
 	{
-		output.append("<div>");
+		context.append("<div>");
 	}
 	@Override
-	public void visitParagraph(StringBuilder output)
+	public void visitParagraph(VisitorContext context)
 	{
-		output.append("<p>");
+		context.append("<p>");
 	}
 	@Override
-	public void visitTitle1(StringBuilder output)
+	public void visitTitle1(VisitorContext context)
 	{
-		output.append("<h3>");
+		context.append("<h3>");
 	}
 	@Override
-	public void visitTitle2(StringBuilder output)
+	public void visitTitle2(VisitorContext context)
 	{
-		output.append("<h4>");
+		context.append("<h4>");
 	}
 	@Override
-	public void visitTitle3(StringBuilder output)
+	public void visitTitle3(VisitorContext context)
 	{
-		output.append("<h5>");
+		context.append("<h5>");
 	}
 	@Override
-	public void visitUnorderedList(StringBuilder output)
+	public void visitUnorderedList(VisitorContext context)
 	{
-		output.append("<ul>");
+		context.append("<ul>\n");
 	}
 	@Override
-	public void visitOrderedList(StringBuilder output)
+	public void visitOrderedList(VisitorContext context)
 	{
-		output.append("<ol>");
+		context.append("<ol>\n");
 	}
 	@Override
-	public void visitListItem(StringBuilder output)
+	public void visitListItem(VisitorContext context)
 	{
-		output.append("<li>");
+		context.append("<li>");
 	}
 	@Override
-	public void visitCode(StringBuilder output)
+	public void visitCode(VisitorContext context)
 	{
-		output.append("<pre><code>");
+		context.append("<pre><code>\n");
 	}
 }

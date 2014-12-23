@@ -2,26 +2,26 @@ package org.philhosoft.formattedtext.format;
 
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 
-public class FragmentStartVisitor implements FragmentDecoration.Visitor<StringBuilder>
+public class FragmentStartVisitor implements FragmentDecoration.Visitor<VisitorContext>
 {
 	@Override
-	public void visitStrong(StringBuilder output)
+	public void visitStrong(VisitorContext context)
 	{
-		output.append("<strong>");
+		context.append("<strong>");
 	}
 	@Override
-	public void visitEmphasis(StringBuilder output)
+	public void visitEmphasis(VisitorContext context)
 	{
-		output.append("<em>");
+		context.append("<em>");
 	}
 	@Override
-	public void visitDelete(StringBuilder output)
+	public void visitDelete(VisitorContext context)
 	{
-		output.append("<del>");
+		context.append("<del>");
 	}
 	@Override
-	public void visitCode(StringBuilder output)
+	public void visitCode(VisitorContext context)
 	{
-		output.append("<code>");
+		context.append("<code>");
 	}
 }

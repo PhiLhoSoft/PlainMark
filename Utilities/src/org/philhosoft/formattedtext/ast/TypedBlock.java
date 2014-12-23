@@ -3,6 +3,10 @@ package org.philhosoft.formattedtext.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A typed block has a type (header, list, etc.) that applies to all the blocks it contains.<br>
+ * These blocks can be typed too, nesting these types.
+ */
 public class TypedBlock implements Block
 {
 	private BlockType type;
