@@ -1,5 +1,8 @@
 package org.philhosoft.formattedtext.format;
 
+import org.philhosoft.formattedtext.ast.Block;
+import org.philhosoft.formattedtext.ast.BlockType;
+
 
 /**
  * Context for formatting visitors.<br>
@@ -11,13 +14,11 @@ public interface VisitorContext
 
 	String asString();
 
-//	MarkedText getParent();
-//	void setParent(MarkedText parent);
-
 	boolean isFirst();
 	boolean isLast();
+	boolean isInOneOf(BlockType... blockTypes);
 
-	void push(String which, boolean first, boolean last);
-	void setFirstLast(String which, boolean first, boolean last);
+	void push(Block parentBlock, boolean first, boolean last);
+	void setFirstLast(boolean first, boolean last);
 	void pop();
 }

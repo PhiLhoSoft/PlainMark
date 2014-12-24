@@ -12,7 +12,7 @@ public class PlainTextVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(DecoratedFragment fragment, VisitorContext context)
 	{
-		VisitorHelper.visitFragments(fragment.getFragments(), this, fragment.getDecoration().name(), context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
 	}
 
 	@Override
@@ -24,20 +24,20 @@ public class PlainTextVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(LinkFragment fragment, VisitorContext context)
 	{
-		VisitorHelper.visitFragments(fragment.getFragments(), this, "Link", context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
 		context.append(" - ").append(fragment.getUrl());
 	}
 
 	@Override
 	public void visit(TypedBlock block, VisitorContext context)
 	{
-		VisitorHelper.visitBlocks(block.getBlocks(), this, block.getType().name(), context);
+		VisitorHelper.visitBlocks(block.getBlocks(), this, block, context);
 	}
 
 	@Override
 	public void visit(Line line, VisitorContext context)
 	{
-		VisitorHelper.visitFragments(line.getFragments(), this, "Line", context);
+		VisitorHelper.visitFragments(line.getFragments(), this, line, context);
 		context.append("\n");
 	}
 }

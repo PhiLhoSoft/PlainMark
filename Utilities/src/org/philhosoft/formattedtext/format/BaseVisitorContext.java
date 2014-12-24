@@ -3,25 +3,32 @@ package org.philhosoft.formattedtext.format;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.philhosoft.formattedtext.ast.Block;
+import org.philhosoft.formattedtext.ast.BlockType;
+import org.philhosoft.formattedtext.ast.TypedBlock;
+
 public abstract class BaseVisitorContext implements VisitorContext
 {
 	private static class FirstLast
 	{
-		private String which;
+		private Block parentBlock;
 		private boolean first;
 		private boolean last;
 
-		public FirstLast(String which, boolean first, boolean last)
+		public FirstLast(Block parentBlock, boolean first, boolean last)
 		{
-			this.which = which;
+			this.parentBlock = parentBlock;
 			this.first = first;
 			this.last = last;
 		}
-		public void setFirstLast(String which, boolean first, boolean last)
+		public void setFirstLast(boolean first, boolean last)
 		{
-			this.which = "(" + which + ")";
 			this.first = first;
 			this.last = last;
+		}
+		public Block getParent()
+		{
+			return parentBlock;
 		}
 		public boolean getFirst()
 		{
@@ -34,23 +41,26 @@ public abstract class BaseVisitorContext implements VisitorContext
 		@Override
 		public String toString()
 		{
-			return "[which=" + which +  ", first=" + first + ", last=" + last + "]";
+			String type = parentBlock == null ? null : "Line";
+			if (parentBlock instanceof TypedBlock)
+				type = ((TypedBlock) parentBlock).getType().name();
+			return "[parentBlock=" + type +  ", first=" + first + ", last=" + last + "]";
 		}
 	}
 	Deque<FirstLast> firstLastList = new ArrayDeque<FirstLast>();
 
 	@Override
-	public void push(String which, boolean first, boolean last)
+	public void push(Block parentBlock, boolean first, boolean last)
 	{
-		firstLastList.push(new FirstLast(which, first, last));
+		firstLastList.push(new FirstLast(parentBlock, first, last));
 	}
 
 	@Override
-	public void setFirstLast(String which, boolean first, boolean last)
+	public void setFirstLast(boolean first, boolean last)
 	{
 		if (firstLastList.size() > 0)
 		{
-			firstLastList.peek().setFirstLast(which, first, last);;
+			firstLastList.peek().setFirstLast(first, last);;
 		}
 	}
 
@@ -77,5 +87,25 @@ public abstract class BaseVisitorContext implements VisitorContext
 		if (firstLastList.size() == 0)
 			return true;
 		return firstLastList.peek().getLast();
+	}
+
+	@Override
+	public boolean isInOneOf(BlockType... blockTypes)
+	{
+		BlockType blockType = BlockType.DOCUMENT;
+		if (firstLastList.size() > 0)
+		{
+			Block parent = firstLastList.peek().getParent();
+			if (parent instanceof TypedBlock)
+			{
+				blockType = ((TypedBlock) parent).getType();
+			}
+		}
+		for (BlockType bt : blockTypes)
+		{
+			if (bt == blockType)
+				return true;
+		}
+		return false;
 	}
 }

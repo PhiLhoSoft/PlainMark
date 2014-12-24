@@ -19,13 +19,14 @@ public class VisitorHelper
 	 * @param which
 	 * @param context  the visiting context
 	 */
-	public static void visitFragments(List<Fragment> list, MarkupVisitor<VisitorContext> visitor, String which, VisitorContext context)
+	public static void visitFragments(List<Fragment> list, MarkupVisitor<VisitorContext> visitor,
+			Block parentBlock, VisitorContext context)
 	{
-		context.push(which, true, list.size() < 2);
+		context.push(parentBlock, true, list.size() < 2);
 		int last = list.size() - 1;
 		for (int i = 0; i <= last; i++)
 		{
-			context.setFirstLast(which, i == 0, i == last);
+			context.setFirstLast(i == 0, i == last);
 			Fragment f = list.get(i);
 			f.accept(visitor, context);
 		}
@@ -39,13 +40,14 @@ public class VisitorHelper
 	 * @param which
 	 * @param context  the visiting context
 	 */
-	public static void visitBlocks(List<Block> list, MarkupVisitor<VisitorContext> visitor, String which, VisitorContext context)
+	public static void visitBlocks(List<Block> list, MarkupVisitor<VisitorContext> visitor,
+			Block parentBlock, VisitorContext context)
 	{
-		context.push(which, true, list.size() < 2);
+		context.push(parentBlock, true, list.size() < 2);
 		int last = list.size() - 1;
 		for (int i = 0; i <= last; i++)
 		{
-			context.setFirstLast(which, i == 0, i == last);
+			context.setFirstLast(i == 0, i == last);
 			Block f = list.get(i);
 			f.accept(visitor, context);
 		}

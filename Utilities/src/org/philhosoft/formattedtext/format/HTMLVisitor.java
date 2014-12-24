@@ -43,14 +43,9 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(DecoratedFragment fragment, VisitorContext context)
 	{
-//		context.setParent(fragment);
-		context.push(fragment.getDecoration().name(), true, fragment.getFragments().size() < 2);
-
 		fragment.getDecoration().accept(fragmentStartVisitor, context);
-		VisitorHelper.visitFragments(fragment.getFragments(), this, "[[" + fragment.getDecoration().name() + "]]", context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
 		fragment.getDecoration().accept(fragmentEndVisitor, context);
-
-		context.pop();
 	}
 
 	@Override
@@ -63,29 +58,32 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	public void visit(LinkFragment fragment, VisitorContext context)
 	{
 		context.append("<a href='").append(fragment.getUrl()).append("'>");
-		VisitorHelper.visitFragments(fragment.getFragments(), this, "Link", context);
+		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
 		context.append("</a>");
 	}
 
 	@Override
 	public void visit(TypedBlock block, VisitorContext context)
 	{
-//		context.setParent(block);
-
 		if (!context.isFirst())
 		{
 			context.append("\n");
 		}
-		context.push(block.getType().name(), true, block.getBlocks().size() < 2);
+		boolean tagOnItsOwnLine = block.getType() == BlockType.DOCUMENT || block.getType() == BlockType.CODE;
 
 		block.getType().accept(blockStartVisitor, context);
-		VisitorHelper.visitBlocks(block.getBlocks(), this, "[[" + block.getType().name() + "]]", context);
-		block.getType().accept(blockEndVisitor, context);
-
-		context.pop();
-		if (context.isLast())
+//		if (tagOnItsOwnLine)
+//		{
+//			context.append("\n");
+//		}
+		VisitorHelper.visitBlocks(block.getBlocks(), this, block, context);
+		if (tagOnItsOwnLine)
 		{
-//			context.append("[Last Block]\n");
+			context.append("\n");
+		}
+		block.getType().accept(blockEndVisitor, context);
+		if (tagOnItsOwnLine || context.isLast())
+		{
 			context.append("\n");
 		}
 	}
@@ -93,17 +91,19 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(Line line, VisitorContext context)
 	{
-		context.push("Line", true, line.getFragments().size() < 2);
+		if (context.isInOneOf(BlockType.DOCUMENT))
+		{
+			context.append("\n");
+		}
 
-		VisitorHelper.visitFragments(line.getFragments(), this, "[[Line]]", context);
+		VisitorHelper.visitFragments(line.getFragments(), this, line, context);
 
-		context.pop();
 		if (!context.isLast())
 		{
-			context.append("<br>\n");
-		}
-		else
-		{
+			if (!context.isInOneOf(BlockType.CODE))
+			{
+				context.append("<br>");
+			}
 			context.append("\n");
 		}
 	}
