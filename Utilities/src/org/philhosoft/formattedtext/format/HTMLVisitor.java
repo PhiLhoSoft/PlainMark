@@ -72,10 +72,10 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 		boolean tagOnItsOwnLine = block.getType() == BlockType.DOCUMENT || block.getType() == BlockType.CODE;
 
 		block.getType().accept(blockStartVisitor, context);
-//		if (tagOnItsOwnLine)
-//		{
-//			context.append("\n");
-//		}
+		if (block.getType() == BlockType.DOCUMENT)
+		{
+			context.append("\n");
+		}
 		VisitorHelper.visitBlocks(block.getBlocks(), this, block, context);
 		if (tagOnItsOwnLine)
 		{
@@ -91,7 +91,7 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(Line line, VisitorContext context)
 	{
-		if (context.isInOneOf(BlockType.DOCUMENT))
+		if (context.isInOneOf(BlockType.DOCUMENT) && !context.isFirst())
 		{
 			context.append("\n");
 		}
