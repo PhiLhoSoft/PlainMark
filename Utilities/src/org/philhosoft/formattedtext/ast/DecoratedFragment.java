@@ -52,7 +52,7 @@ public class DecoratedFragment implements Fragment
 	{
 		if (obj == this)
 			return true;
-		if (!(obj instanceof TypedBlock))
+		if (!(obj instanceof DecoratedFragment))
 			return false;
 		DecoratedFragment tb = (DecoratedFragment) obj;
 		return tb.decoration == this.decoration && tb.fragments.equals(this.fragments);

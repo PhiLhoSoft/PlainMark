@@ -45,13 +45,13 @@ public class Line implements Block
 	{
 		if (obj == this)
 			return true;
-		if (!(obj instanceof TypedBlock))
+		if (!(obj instanceof Line))
 			return false;
-		return ((Line) obj).fragments == this.fragments;
+		return ((Line) obj).fragments.equals(this.fragments);
 	}
 	@Override
 	public String toString()
 	{
-		return "Line" + fragments;
+		return "Line[" + fragments + "]";
 	}
 }
