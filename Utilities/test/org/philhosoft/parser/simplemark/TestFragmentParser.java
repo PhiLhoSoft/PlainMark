@@ -34,7 +34,7 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testStrong_startOfLine()
+	public void testSingleDecoration_startOfLine()
 	{
 		StringWalker walker = new StringWalker("*Strong* text");
 
@@ -48,14 +48,14 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testStrong_middleOfLine()
+	public void testSingleDecoration_middleOfLine()
 	{
-		StringWalker walker = new StringWalker("A *Strong* text");
+		StringWalker walker = new StringWalker("An _emphased_ text");
 
 		Line expected = new Line();
-		expected.add(new TextFragment("A "));
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add(new TextFragment("Strong"));
+		expected.add(new TextFragment("An "));
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		df.add(new TextFragment("emphased"));
 		expected.add(df);
 		expected.add(new TextFragment(" text"));
 
@@ -63,35 +63,35 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testStrong_endOfLine()
+	public void testSingleDecoration_endOfLine()
 	{
-		StringWalker walker = new StringWalker("A text *Strong*");
+		StringWalker walker = new StringWalker("A text -deleted-");
 
 		Line expected = new Line();
 		expected.add(new TextFragment("A text "));
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add(new TextFragment("Strong"));
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.DELETE);
+		df.add(new TextFragment("deleted"));
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
 	@Test
-	public void testStrong_unfinished1()
+	public void testSingleDecoration_unfinished1()
 	{
-		StringWalker walker = new StringWalker("A text *Strong");
+		StringWalker walker = new StringWalker("A text `fixed width");
 
 		Line expected = new Line();
 		expected.add(new TextFragment("A text "));
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add(new TextFragment("Strong"));
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE);
+		df.add(new TextFragment("fixed width"));
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
 	@Test
-	public void testStrong_unfinished2()
+	public void testSingleDecoration_unfinished2()
 	{
 		StringWalker walker = new StringWalker("*Strong text");
 

@@ -2,7 +2,9 @@ package org.philhosoft.parser.simplemark;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.Fragment;
@@ -19,6 +21,14 @@ import org.philhosoft.parser.StringWalker;
  */
 public class FragmentParser
 {
+	Map<Character, FragmentDecoration> decorations = new HashMap<Character, FragmentDecoration>();
+	{
+		decorations.put('*', FragmentDecoration.STRONG);
+		decorations.put('_', FragmentDecoration.EMPHASIS);
+		decorations.put('-', FragmentDecoration.DELETE);
+		decorations.put('`', FragmentDecoration.CODE);
+	}
+
 	private StringWalker walker;
 	private Line line = new Line();
 	private Deque<FragmentDecoration> stack = new ArrayDeque<FragmentDecoration>();
@@ -44,9 +54,10 @@ public class FragmentParser
 				walker.forward(); // Skip line end
 				break; // Don't go beyond
 			}
-			if (walker.current() == '*')
+			FragmentDecoration decoration = decorations.get(walker.current());
+			if (decoration != null)
 			{
-				handleStar();
+				handleDecorationCharacter(decoration);
 			}
 
 			if (!walker.atLineEnd())
@@ -65,14 +76,14 @@ public class FragmentParser
 			}
 			else
 			{
-				handleStar();
+				handleDecorationCharacter(stack.peek());
 			}
 		}
 
 		return line;
 	}
 
-	private void handleStar()
+	private void handleDecorationCharacter(FragmentDecoration decoration)
 	{
 		if (stack.size() == 0)
 		{
@@ -82,9 +93,9 @@ public class FragmentParser
 				outputString.setLength(0); // Clear
 			}
 		}
-		if (stack.peek() == FragmentDecoration.STRONG)
+		if (stack.peek() == decoration)
 		{
-			// End of the strong part
+			// End of the decorated part
 			stack.pop();
 			List<Fragment> fragments = line.getFragments();
 			DecoratedFragment fragment = (DecoratedFragment) fragments.get(fragments.size() - 1);
@@ -93,8 +104,8 @@ public class FragmentParser
 		}
 		else
 		{
-			line.add(new DecoratedFragment(FragmentDecoration.STRONG));
-			stack.push(FragmentDecoration.STRONG);
+			line.add(new DecoratedFragment(decoration));
+			stack.push(decoration);
 		}
 		walker.forward(); // Skip this star
 	}
