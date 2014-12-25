@@ -8,6 +8,8 @@ import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.TextFragment;
+import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
+import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.parser.StringWalker;
 
 
@@ -101,5 +103,129 @@ public class TestFragmentParser
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_simple()
+	{
+		StringWalker walker = new StringWalker("An _emphased and even *strong* text_.");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("An "));
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfe.add(new TextFragment("emphased and even "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		dfs.add(new TextFragment("strong"));
+		dfe.add(dfs);
+		dfe.add(new TextFragment(" text"));
+		expected.add(dfe);
+		expected.add(new TextFragment("."));
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_strongEmphasis()
+	{
+		StringWalker walker = new StringWalker("This is *_strong emphased_* text.");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("This is "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfe.add(new TextFragment("strong emphased"));
+		dfs.add(dfe);
+		expected.add(dfs);
+		expected.add(new TextFragment(" text."));
+
+//		checkExpected(expected);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_strongEmphasisLast()
+	{
+		StringWalker walker = new StringWalker("This text is *_strong emphased_*");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("This text is "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfe.add(new TextFragment("strong emphased"));
+		dfs.add(dfe);
+		expected.add(dfs);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_strongEmphasis2()
+	{
+		StringWalker walker = new StringWalker("This is *_strong emphased_ then strong* text.");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("This is "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfe.add(new TextFragment("strong emphased"));
+		dfs.add(dfe);
+		dfs.add(new TextFragment(" then strong"));
+		expected.add(dfs);
+		expected.add(new TextFragment(" text."));
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_strongEmphasis3()
+	{
+		StringWalker walker = new StringWalker("This is *strong and _strong emphased_* text.");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("This is "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		dfs.add(new TextFragment("strong and "));
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfs.add(dfe);
+		dfe.add(new TextFragment("strong emphased"));
+		expected.add(dfs);
+		expected.add(new TextFragment(" text."));
+
+//		checkExpected(expected);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_strongEmphasisCode()
+	{
+		StringWalker walker = new StringWalker("This is *strong and _strong `(code)` emphased_ text*.");
+
+		Line expected = new Line();
+		expected.add(new TextFragment("This is "));
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		dfs.add(new TextFragment("strong and "));
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		dfe.add(new TextFragment("strong "));
+		dfs.add(dfe);
+		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE);
+		dfc.add(new TextFragment("(code)"));
+		dfe.add(dfc);
+		dfe.add(new TextFragment(" emphased"));
+		dfs.add(new TextFragment(" text"));
+		expected.add(dfs);
+		expected.add(new TextFragment("."));
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@SuppressWarnings("unused")
+	private void checkExpected(Line expected)
+	{
+		HTMLVisitor visitor = new HTMLVisitor();
+		ContextWithStringBuilder ctx = new ContextWithStringBuilder();
+		expected.accept(visitor, ctx);
+		System.out.println(ctx.asString());
 	}
 }

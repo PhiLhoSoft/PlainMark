@@ -3,7 +3,6 @@ package org.philhosoft.parser.simplemark;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
@@ -31,7 +30,7 @@ public class FragmentParser
 
 	private StringWalker walker;
 	private Line line = new Line();
-	private Deque<FragmentDecoration> stack = new ArrayDeque<FragmentDecoration>();
+	private Deque<DecoratedFragment> stack = new ArrayDeque<DecoratedFragment>();
 	private StringBuilder outputString = new StringBuilder();
 
 	private FragmentParser(StringWalker walker)
@@ -59,8 +58,7 @@ public class FragmentParser
 			{
 				handleDecorationCharacter(decoration);
 			}
-
-			if (!walker.atLineEnd())
+			else if (!walker.atLineEnd())
 			{
 				outputString.append(walker.current());
 				walker.forward();
@@ -76,7 +74,7 @@ public class FragmentParser
 			}
 			else
 			{
-				handleDecorationCharacter(stack.peek());
+				handleDecorationCharacter(stack.peek().getDecoration());
 			}
 		}
 
@@ -93,20 +91,39 @@ public class FragmentParser
 				outputString.setLength(0); // Clear
 			}
 		}
-		if (stack.peek() == decoration)
+		DecoratedFragment currentDecoratedFragment = stack.peek();
+		if (currentDecoratedFragment == null) // Not inside a decoration
 		{
-			// End of the decorated part
-			stack.pop();
-			List<Fragment> fragments = line.getFragments();
-			DecoratedFragment fragment = (DecoratedFragment) fragments.get(fragments.size() - 1);
-			fragment.add(new TextFragment(outputString.toString()));
-			outputString.setLength(0); // Clear
+			// Start a new decoration
+			DecoratedFragment fragment = new DecoratedFragment(decoration);
+			line.add(fragment);
+			stack.push(fragment);
 		}
-		else
+		else // Inside a decoration
 		{
-			line.add(new DecoratedFragment(decoration));
-			stack.push(decoration);
+			if (currentDecoratedFragment.getDecoration() == decoration)
+			{
+				// End of the decorated part
+				stack.pop();
+				addOutputStringTo(currentDecoratedFragment);
+			}
+			else // We start a new, different decoration
+			{
+				addOutputStringTo(currentDecoratedFragment);
+				DecoratedFragment fragment = new DecoratedFragment(decoration);
+				currentDecoratedFragment.add(fragment);
+				stack.push(fragment);
+			}
 		}
 		walker.forward(); // Skip this star
+	}
+
+	private void addOutputStringTo(DecoratedFragment currentDecoratedFragment)
+	{
+		if (outputString.length() > 0)
+		{
+			currentDecoratedFragment.add(new TextFragment(outputString.toString()));
+			outputString.setLength(0); // Clear
+		}
 	}
 }
