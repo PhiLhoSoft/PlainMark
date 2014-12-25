@@ -49,7 +49,7 @@ public class StringWalker
 			cursor++;
 			previous = current;
 			current = next;
-			atLineEnd = isOnLineTerminator();
+			atLineEnd = isOnLineTerminator() || !hasMore();
 			fetchNextCharacter();
 		}
 		else

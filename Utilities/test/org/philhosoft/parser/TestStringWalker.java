@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import org.philhosoft.parser.StringWalker;
-
 
 public class TestStringWalker
 {
@@ -64,7 +62,21 @@ public class TestStringWalker
 		assertThat(walker.match("le  ")).isFalse();
 		assertThat(walker.match("leet")).isFalse();
 
-		walker.forward(3);
+		walker.forward(2);
+
+		assertThat(walker.hasMore()).isFalse();
+		assertThat(walker.atLineEnd()).isTrue();
+		assertThat(walker.atLineStart()).isFalse();
+
+		assertThat(walker.previous()).isEqualTo('e');
+		assertThat(walker.current()).isEqualTo('\0');
+		assertThat(walker.next()).isEqualTo('\0');
+
+		assertThat(walker.match('x')).isFalse();
+		assertThat(walker.match('x', 'x')).isFalse();
+		assertThat(walker.match("meet")).isFalse();
+
+		walker.forward();
 
 		assertThat(walker.hasMore()).isFalse();
 		assertThat(walker.atLineEnd()).isTrue();

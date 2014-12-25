@@ -22,7 +22,7 @@ public class FragmentParser
 	private StringWalker walker;
 	private Line line = new Line();
 	private Deque<FragmentDecoration> stack = new ArrayDeque<FragmentDecoration>();
-	private StringBuilder sb = new StringBuilder();
+	private StringBuilder outputString = new StringBuilder();
 
 	private FragmentParser(StringWalker walker)
 	{
@@ -49,12 +49,25 @@ public class FragmentParser
 				handleStar();
 			}
 
-			sb.append(walker.current());
-			walker.forward();
+			if (!walker.atLineEnd())
+			{
+				outputString.append(walker.current());
+				walker.forward();
+			}
 		}
 
-		Fragment fragment = new TextFragment(sb.toString());
-		line.add(fragment);
+		if (outputString.length() > 0)
+		{
+			Fragment fragment = new TextFragment(outputString.toString());
+			if (stack.size() == 0)
+			{
+				line.add(fragment);
+			}
+			else
+			{
+				handleStar();
+			}
+		}
 
 		return line;
 	}
@@ -63,10 +76,10 @@ public class FragmentParser
 	{
 		if (stack.size() == 0)
 		{
-			if (sb.length() > 0)
+			if (outputString.length() > 0)
 			{
-				line.add(new TextFragment(sb.toString()));
-				sb.setLength(0); // Clear
+				line.add(new TextFragment(outputString.toString()));
+				outputString.setLength(0); // Clear
 			}
 		}
 		if (stack.peek() == FragmentDecoration.STRONG)
@@ -75,8 +88,8 @@ public class FragmentParser
 			stack.pop();
 			List<Fragment> fragments = line.getFragments();
 			DecoratedFragment fragment = (DecoratedFragment) fragments.get(fragments.size() - 1);
-			fragment.add(new TextFragment(sb.toString()));
-			sb.setLength(0); // Clear
+			fragment.add(new TextFragment(outputString.toString()));
+			outputString.setLength(0); // Clear
 		}
 		else
 		{
