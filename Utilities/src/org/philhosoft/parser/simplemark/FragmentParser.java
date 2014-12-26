@@ -6,10 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
-import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
-import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.parser.StringWalker;
 
 /**
@@ -54,23 +52,24 @@ public class FragmentParser
 				break; // Don't go beyond
 			}
 			FragmentDecoration decoration = decorations.get(walker.current());
+			boolean processed = false;
 			if (decoration != null)
 			{
-				handleDecorationCharacter(decoration);
+				processed = handleDecorationCharacter(decoration);
 			}
-			else if (!walker.atLineEnd())
+			if (!processed && !walker.atLineEnd())
 			{
 				outputString.append(walker.current());
 				walker.forward();
 			}
 		}
 
+		// We reached the end of line, see if some text remains to be processed
 		if (outputString.length() > 0)
 		{
-			Fragment fragment = new TextFragment(outputString.toString());
 			if (stack.size() == 0)
 			{
-				line.add(fragment);
+				line.add(outputString.toString());
 			}
 			else
 			{
@@ -81,13 +80,13 @@ public class FragmentParser
 		return line;
 	}
 
-	private void handleDecorationCharacter(FragmentDecoration decoration)
+	private boolean handleDecorationCharacter(FragmentDecoration decoration)
 	{
 		if (stack.size() == 0)
 		{
 			if (outputString.length() > 0)
 			{
-				line.add(new TextFragment(outputString.toString()));
+				line.add(outputString.toString());
 				outputString.setLength(0); // Clear
 			}
 		}
@@ -107,6 +106,11 @@ public class FragmentParser
 				stack.pop();
 				addOutputStringTo(currentDecoratedFragment);
 			}
+			else if (inStack(decoration))
+			{
+				// Ignore this one, redundant, keep it as regular character
+				return false;
+			}
 			else // We start a new, different decoration
 			{
 				addOutputStringTo(currentDecoratedFragment);
@@ -115,15 +119,26 @@ public class FragmentParser
 				stack.push(fragment);
 			}
 		}
-		walker.forward(); // Skip this star
+		walker.forward(); // Skip this processed decoration character
+		return true;
 	}
 
 	private void addOutputStringTo(DecoratedFragment currentDecoratedFragment)
 	{
 		if (outputString.length() > 0)
 		{
-			currentDecoratedFragment.add(new TextFragment(outputString.toString()));
+			currentDecoratedFragment.add(outputString.toString());
 			outputString.setLength(0); // Clear
 		}
+	}
+
+	private boolean inStack(FragmentDecoration decoration)
+	{
+		for (DecoratedFragment decoratedFragment : stack)
+		{
+			if (decoratedFragment.getDecoration() == decoration)
+				return true;
+		}
+		return false;
 	}
 }

@@ -22,6 +22,10 @@ public class DecoratedFragment implements Fragment
 		fragments.add(new TextFragment(firstText));
 	}
 
+	public void add(String text)
+	{
+		fragments.add(new TextFragment(text));
+	}
 	public void add(Fragment fragment)
 	{
 		fragments.add(fragment);
