@@ -81,6 +81,58 @@ public class TestFragmentParser
 	}
 
 	@Test
+	public void testSingleDecoration_quote()
+	{
+		// Verifying proper context checking
+		StringWalker walker = new StringWalker("Quoting: \"_Quoted Fragment_\"");
+
+		Line expected = new Line();
+		expected.add("Quoting: \"");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		df.add("Quoted Fragment");
+		expected.add(df);
+		expected.add("\"");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_escaping()
+	{
+		StringWalker walker = new StringWalker("This is not ~*strong~*");
+
+		Line expected = new Line();
+		expected.add("This is not *strong*");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_escapingItself()
+	{
+		StringWalker walker = new StringWalker("This is a ~~ tilde");
+
+		Line expected = new Line();
+		expected.add("This is a ~ tilde");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_escapingAtEnd()
+	{
+		StringWalker walker = new StringWalker("This is *strong~* and still~");
+
+		Line expected = new Line();
+		expected.add("This is ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
+		df.add("strong* and still");
+		expected.add(df);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
 	public void testNestedDecorations_simple()
 	{
 		StringWalker walker = new StringWalker("An _emphasized and even *strong* text_.");
@@ -275,6 +327,80 @@ public class TestFragmentParser
 		dfc.add("emphasized*_ text"); // Decoration inside same decoration (at higher level) is ignored
 		dfe.add(dfc);
 		dfe.add(".");
+		expected.add(dfs);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	//## Cases where the context of the decoration doesn't allow the decoration to be triggered
+
+	@Test
+	public void testDeactivatedDecoration_starting_noSpaces1()
+	{
+		StringWalker walker = new StringWalker("This is not*strong at all");
+
+		Line expected = new Line();
+		expected.add("This is not*strong at all");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testDeactivatedDecoration_starting_noSpaces2()
+	{
+		StringWalker walker = new StringWalker("This is in-line and var_name");
+
+		Line expected = new Line();
+		expected.add("This is in-line and var_name");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testDeactivatedDecoration_starting_spaces()
+	{
+		StringWalker walker = new StringWalker("Isolated * star or - dash");
+
+		Line expected = new Line();
+		expected.add("Isolated * star or - dash");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testDeactivatedDecoration_starting_expression()
+	{
+		StringWalker walker = new StringWalker("x*y_2-7");
+
+		Line expected = new Line();
+		expected.add("x*y_2-7");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testDeactivatedDecoration_ending_noSpaces()
+	{
+		StringWalker walker = new StringWalker("This is *strong not*ending at all");
+
+		Line expected = new Line();
+		expected.add("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		dfs.add("strong not*ending at all");
+		expected.add(dfs);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testDeactivatedDecoration_ending_spaces()
+	{
+		StringWalker walker = new StringWalker("This is *strong not * ending at all");
+
+		Line expected = new Line();
+		expected.add("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		dfs.add("strong not * ending at all");
 		expected.add(dfs);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);

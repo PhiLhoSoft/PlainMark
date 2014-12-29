@@ -8,6 +8,8 @@ One of the main departure from the original spec is that the newline character d
 
 As a consequence, it simplifies greatly the spec (and the parsing!) and the usage of the markup.
 
+Likewise, like Google+, I favor one character signs for styling fragments, with distinct usages. The fact that * and _ have the same rendering in Markdown, and ~** and ~__ a different rendering (and ~*** or ~___ to combine them!) looks quite confusing...
+
 The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).
 These special characters can loose their meaning in some context, and can always be escaped with the tilde `~~` sign preceding them.
 If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.
@@ -18,7 +20,7 @@ A fragment of text stops at the end of the line: authors rarely want to have sev
 
 ### Limitations
 
-There is no support for blockquotes, tables or images. No HTML markup can be used, `&` ,`<` and `>` signs are escaped (kept literal).
+There is no support for blockquotes (I prefer to use double quotes surrounding an italicized citation), tables or images. No HTML markup can be used, `&` ,`<` and `>` signs are escaped (kept literal) in an HTML rendering.
 
 
 ## Styles
@@ -40,6 +42,12 @@ Fragment styling can be nested:
 This sentence has ~_italic parts ~*and bold~* too~_.
 becomes:
 This sentence has _italic parts *and bold* too_.
+
+The ending signs must be in reverse order of the starting one:
+This is ~*~_strong emphasized~*~_ text.
+will be displayed as:
+This is *_strong emphasized*_ text.
+because you cannot have a new bold style inside a fragment that is already bold, and the second star doesn't end the first one because a new style has been started and not ended yet.
 
 
 ## Links
@@ -77,7 +85,7 @@ An empty line (or several consecutive ones) separates paragraphs, rendered in HT
 
 Unordered lists are made with at least two consecutive lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space.
 Ordered lists  are made with at least two consecutive lines starting with a number (sequence of digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
-No nesting is handled. A list stops with an empty line, so we can have two distinct consecutive lists.
+No nesting is handled. A list stops with an empty line, so there can be two distinct consecutive lists.
 
 ~* Item
 ~* Other item
