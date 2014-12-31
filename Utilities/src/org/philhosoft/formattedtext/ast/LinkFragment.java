@@ -6,21 +6,29 @@ import java.util.List;
 public class LinkFragment implements Fragment
 {
 	private List<Fragment> fragments = new ArrayList<Fragment>(); // source anchor
-	private String url; // destination anchor
+	private String url = ""; // destination anchor
 
+	public LinkFragment()
+	{
+	}
 	public LinkFragment(String text, String url)
 	{
-		this(new TextFragment(text), url);
-	}
-	public LinkFragment(Fragment fragment, String url)
-	{
-		this.fragments.add(fragment);
+		fragments.add(new TextFragment(text));
 		this.url = url;
 	}
 
+	public void add(String text)
+	{
+		fragments.add(new TextFragment(text));
+	}
 	public void add(Fragment newFragment)
 	{
 		fragments.add(newFragment);
+	}
+
+	public void addURL(String url)
+	{
+		this.url = url;
 	}
 
 	public List<Fragment> getFragments()

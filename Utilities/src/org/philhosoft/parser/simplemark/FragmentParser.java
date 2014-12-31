@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
+import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
+import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.parser.StringWalker;
 
 /**
@@ -19,7 +21,28 @@ import org.philhosoft.parser.StringWalker;
 public class FragmentParser
 {
 	private static final char ESCAPE_SIGN = '~';
-	Map<Character, FragmentDecoration> decorations = new HashMap<Character, FragmentDecoration>();
+
+	private static final int LINK_MAX_LENGTH = 30;
+	private static final char LINK_START_SIGN = '(';
+	private static final char LINK_END_SIGN = ')';
+	private static final char URL_START_SIGN = '[';
+	private static final char URL_END_SIGN = ']';
+	private static final String[] urlPrefixes =
+	{
+		"http://", "https://", "ftp://", "ftps://",
+	};
+	// http://stackoverflow.com/questions/1856785/characters-allowed-in-a-url
+	// Used only for autolinking. Obviously, ) will terminate the URL in explicit links, and should be escaped to %29.
+	// ] can be escaped to %5D if needed, too.
+	private static final char[] VALID_URL_CHARS =
+	{
+		'-', '.', '_', '~', // unreserved (with alpha-num, of course)
+		':', '/', '?', '#', '[', ']', '@', // reserved, gen-delims
+		'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=', // reserved, sub-delims
+		'%' // escape
+	};
+
+	private static final Map<Character, FragmentDecoration> decorations = new HashMap<Character, FragmentDecoration>();
 	{
 		decorations.put('*', FragmentDecoration.STRONG);
 		decorations.put('_', FragmentDecoration.EMPHASIS);
@@ -27,19 +50,43 @@ public class FragmentParser
 		decorations.put('`', FragmentDecoration.CODE);
 	}
 
+
 	private StringWalker walker;
+	private int maxLinkLength = LINK_MAX_LENGTH;
 	private Line line = new Line();
 	private Deque<DecoratedFragment> stack = new ArrayDeque<DecoratedFragment>();
 	private StringBuilder outputString = new StringBuilder();
 
-	private FragmentParser(StringWalker walker)
+	private FragmentParser(StringWalker walker, int maxLinkLength)
 	{
 		this.walker = walker;
+		this.maxLinkLength = maxLinkLength;
 	}
 
+	/**
+	 * Parses the string given with the walker, and returns a Line, leaving the walker at the end of the line.
+	 *
+	 * @param walker  the walker at the position where we want to start parsing
+	 * @return the resulting line
+	 */
 	public static Line parse(StringWalker walker)
 	{
-		FragmentParser parser = new FragmentParser(walker);
+		FragmentParser parser = new FragmentParser(walker, LINK_MAX_LENGTH);
+		return parser.parse();
+	}
+
+	/**
+	 * When autolinking URLs
+	 * (eg. http://www.example.com/whatever becoming (www.example.com/whatever)[http://www.example.com/whatever]),
+	 * the link text length will be limited (with ellipsis). Default is 30 chars, this methods allows to change this
+	 * limit.
+	 *
+	 * @param walker  the walker at the position where we want to start parsing
+	 * @param maxLinkLength  maximum length (without ellipsis) of the link text. If set to zero or lower, there is no limit.
+	 */
+	public static Line parse(StringWalker walker, int maxLinkLength)
+	{
+		FragmentParser parser = new FragmentParser(walker, maxLinkLength);
 		return parser.parse();
 	}
 
@@ -50,7 +97,7 @@ public class FragmentParser
 			if (walker.atLineEnd())
 			{
 				walker.forward(); // Skip line end
-				break; // Don't go beyond, as this remains within line bounds
+				break; // Don't go beyond, as this parser remains within line bounds
 			}
 
 			if (walker.current() == ESCAPE_SIGN)
@@ -59,6 +106,13 @@ public class FragmentParser
 				walker.forward();
 				// And consume next character (if any) literally
 				appendCurrentAndForward();
+				continue;
+			}
+			String urlPrefix = findURLPrefix();
+			if (urlPrefix != null)
+			{
+				handleURL(urlPrefix);
+				continue;
 			}
 			FragmentDecoration decoration = decorations.get(walker.current());
 			boolean processed = false;
@@ -73,19 +127,7 @@ public class FragmentParser
 		}
 
 		// We reached the end of line, see if some text remains to be processed
-		if (outputString.length() > 0)
-		{
-			if (stack.size() == 0)
-			{
-				// No current style, just add text literally
-				line.add(outputString.toString());
-			}
-			else
-			{
-				// Add remaining text to the current style
-				handleDecorationSign(stack.peek().getDecoration());
-			}
-		}
+		addOutputToLine();
 
 		return line;
 	}
@@ -113,12 +155,9 @@ public class FragmentParser
 		if (currentDecoratedFragment == null)
 		{
 			// Not in a decoration so far
-			if (outputString.length() > 0)
-			{
-				// We already captured some text, add it as text fragment
-				line.add(outputString.toString());
-				outputString.setLength(0); // Clear
-			}
+
+			// We already captured some text, add it as text fragment
+			addOutputToLine();
 			// Start a new decoration
 			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
 			line.add(fragment);
@@ -132,7 +171,7 @@ public class FragmentParser
 				stack.pop();
 				addOutputStringTo(currentDecoratedFragment);
 			}
-			else if (inStack(foundDecoration))
+			else if (isInStack(foundDecoration))
 			{
 				// Ignore this one, redundant, keep it as regular character
 				return false;
@@ -149,6 +188,15 @@ public class FragmentParser
 		return true;
 	}
 
+	/**
+	 * Checks if the current markup sign has a context allowing to see it as a markup start or end.
+	 * <p>
+	 * Assumes we know already that walker.current() is one of the markup signs.
+	 *
+	 * @param foundDecoration  the decoration corresponding to walker.current()
+	 * @param currentDecoratedFragment  the context where the sign is found
+	 * @return true if it is OK, false if it is a plain character
+	 */
 	private boolean isCurrentAMarkupSign(
 			FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
 	{
@@ -177,6 +225,47 @@ public class FragmentParser
 		return true;
 	}
 
+	/**
+	 * Adds the current content of outputString to the line.<br>
+	 * Directly or to the current decorated fragment if we are inside one.
+	 */
+	private void addOutputToLine()
+	{
+		if (outputString.length() > 0)
+		{
+			DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
+			if (currentDecoratedFragment == null)
+			{
+				// No current style, just add text literally
+				line.add(outputString.toString());
+			}
+			else
+			{
+				// Add remaining text to the current (unterminated) style
+				currentDecoratedFragment.add(outputString.toString());
+			}
+			outputString.setLength(0); // Clear
+		}
+	}
+
+	/**
+	 * Adds the given fragment to the line.<br>
+	 * Directly or to the current decorated fragment if we are inside one.
+	 */
+	private void addFragmentToLine(Fragment fragment)
+	{
+		DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
+		if (currentDecoratedFragment == null)
+		{
+			// No current style, just add at top level
+			line.add(fragment);
+		}
+		else
+		{
+			currentDecoratedFragment.add(fragment);
+		}
+	}
+
 	private void addOutputStringTo(DecoratedFragment currentDecoratedFragment)
 	{
 		if (outputString.length() > 0)
@@ -186,7 +275,7 @@ public class FragmentParser
 		}
 	}
 
-	private boolean inStack(FragmentDecoration decoration)
+	private boolean isInStack(FragmentDecoration decoration)
 	{
 		for (DecoratedFragment decoratedFragment : stack)
 		{
@@ -194,5 +283,43 @@ public class FragmentParser
 				return true;
 		}
 		return false;
+	}
+
+	private String findURLPrefix()
+	{
+		// Fast exit, to adjust if more prefixes are added
+		if (walker.current() != 'h' && walker.current() != 'f')
+			return null;
+
+		for (String p : urlPrefixes)
+		{
+			if (walker.match(p))
+				return p;
+		}
+		return null;
+	}
+
+	private void handleURL(String urlPrefix)
+	{
+		walker.forward(urlPrefix.length());
+		if (!walker.isAlphaNumerical())
+		{
+			// Probably just mentioning a raw schema
+			outputString.append(urlPrefix);
+			return;
+		}
+		while (walker.isAlphaNumerical() || walker.matchOneOf(VALID_URL_CHARS))
+		{
+			outputString.append(walker.current());
+			walker.forward();
+		}
+		String text = outputString.toString();
+		if (maxLinkLength > 0 && maxLinkLength < text.length())
+		{
+			text = text.substring(0, maxLinkLength);
+		}
+		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
+		addFragmentToLine(lf);
+		outputString.setLength(0);
 	}
 }

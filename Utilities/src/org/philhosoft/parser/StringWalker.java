@@ -69,6 +69,7 @@ public class StringWalker
 			forward();
 		}
 	}
+
 	/**
 	 * True if we are no an end-of-line character<br>
 	 * (classical CR and LF, but also Unicode EOL code points).
@@ -84,6 +85,7 @@ public class StringWalker
 	{
 		return atLineStart;
 	}
+
 	/**
 	 * Returns the current character, if any (space otherwise).
 	 */
@@ -105,6 +107,7 @@ public class StringWalker
 	{
 		return next;
 	}
+
 	/**
 	 * True if the current character is the given one.
 	 */
@@ -141,6 +144,7 @@ public class StringWalker
 		}
 		return true;
 	}
+
 	/**
 	 * True if the current character is in the given list of chars.
 	 */
@@ -152,6 +156,12 @@ public class StringWalker
 				return true;
 		}
 		return false;
+	}
+
+	/** More restrictive than Character.isLetterOrDigit(). */
+	public boolean isAlphaNumerical()
+	{
+		return current >= 'A' && current <= 'Z' || current >= 'a' && current <= 'z' || current >= '0' && current <= '9';
 	}
 
 	private void fetchNextCharacter()

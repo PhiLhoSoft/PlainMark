@@ -2,11 +2,13 @@ package org.philhosoft.parser.simplemark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
+import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
 import org.philhosoft.formattedtext.format.HTMLVisitor;
@@ -34,6 +36,7 @@ public class TestFragmentParser
 		assertThat(walker.atLineStart()).isTrue();
 		assertThat(walker.current()).isEqualTo('L');
 	}
+
 
 	//## Regular cases of proper markup
 
@@ -247,6 +250,7 @@ public class TestFragmentParser
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
+
 	//## Cases where users forgot to close their markup. We stop at line end.
 
 	@Test
@@ -258,6 +262,20 @@ public class TestFragmentParser
 		expected.add("A text ");
 		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE);
 		df.add("fixed width");
+		expected.add(df);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_unterminated_bug()
+	{
+		StringWalker walker = new StringWalker("A text `fixed width ");
+
+		Line expected = new Line();
+		expected.add("A text ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE);
+		df.add("fixed width ");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -292,6 +310,7 @@ public class TestFragmentParser
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
+
 
 	//## Improper nesting
 
@@ -331,6 +350,7 @@ public class TestFragmentParser
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
+
 
 	//## Cases where the context of the decoration doesn't allow the decoration to be triggered
 
@@ -402,6 +422,100 @@ public class TestFragmentParser
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
 		dfs.add("strong not * ending at all");
 		expected.add(dfs);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+
+	//## Implicit URL detection or explicit URL markup
+
+	@Ignore
+	@Test
+	public void testURL_implicit_notAURL()
+	{
+		StringWalker walker = new StringWalker("Using the http:// schema (or https://)");
+
+		Line expected = new Line();
+		expected.add("Using the http:// schema (or https://)");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com to become a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com", "http://www.example.com");
+		expected.add(lf);
+		expected.add(" to become a URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_long()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com/foo/index.html#fragment to become a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com/foo/index.html", "http://www.example.com/foo/index.html#fragment");
+		expected.add(lf);
+		expected.add(" to become a URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_longer()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49 to become a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/?a=sp+", "http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49");
+		expected.add(lf);
+		expected.add(" to become a URL");
+
+		assertThat(FragmentParser.parse(walker, 36)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_longerShortened()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/somewhere.html to become a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com/foo-", "http://www.example.com/foo-bar/~name/somewhere.html");
+		expected.add(lf);
+		expected.add(" to become a URL");
+
+		assertThat(FragmentParser.parse(walker, 20)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_longerNoLimit()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/somewhere.html#insideLink to become a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/somewhere.html#insideLink");
+		expected.add(lf);
+		expected.add(" to become a URL");
+
+		assertThat(FragmentParser.parse(walker, 0)).isEqualTo(expected);
+	}
+
+	@Ignore
+	@Test
+	public void testURL_explicit()
+	{
+		StringWalker walker = new StringWalker("I (link)[http://www.example.com] to a URL");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("link", "http://www.example.com");
+		expected.add(lf);
+		expected.add(" to a URL");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}

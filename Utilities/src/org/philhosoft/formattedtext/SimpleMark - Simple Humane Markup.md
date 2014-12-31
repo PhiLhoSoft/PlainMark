@@ -55,13 +55,15 @@ because you cannot have a new bold style inside a fragment that is already bold,
 A link can be made explicitly by wrapping the link text in brackets `[]`, followed by the link itself in parentheses `()`.
 Example: ~[A well known destination](www.google.com) or ~[Popular programming site](https://github.com) become:
 [A well known destination](www.google.com) and [Popular programming site](https://github.com).
-If no schema is provided, it will be `http://`
+If no schema is provided, it will be `http://`.
+The link text can have markup signs in it.
 
 ### URL autolinking
 
-URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form.
+URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (eg. autolinking google.com or www.example.com/whatever).
 
 Markup signs are ignored while parsing an URL.
+The link text will be the URL without the schema (to be shorter). If the URL is longer than a predefined (ajustable) length, it will be shortened with ellipsis.
 
 
 ## Titles
