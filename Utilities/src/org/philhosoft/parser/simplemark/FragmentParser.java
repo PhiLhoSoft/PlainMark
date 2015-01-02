@@ -10,6 +10,7 @@ import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.LinkFragment;
+import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.parser.StringWalker;
 
 /**
@@ -23,10 +24,10 @@ public class FragmentParser
 	private static final char ESCAPE_SIGN = '~';
 
 	private static final int LINK_MAX_LENGTH = 30;
-	private static final char LINK_START_SIGN = '(';
-	private static final char LINK_END_SIGN = ')';
-	private static final char URL_START_SIGN = '[';
-	private static final char URL_END_SIGN = ']';
+	private static final char LINK_START_SIGN = '[';
+	private static final char LINK_END_SIGN = ']';
+	private static final char URL_START_SIGN = '(';
+	private static final char URL_END_SIGN = ')';
 	private static final String[] urlPrefixes =
 	{
 		"http://", "https://", "ftp://", "ftps://",
@@ -233,17 +234,7 @@ public class FragmentParser
 	{
 		if (outputString.length() > 0)
 		{
-			DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
-			if (currentDecoratedFragment == null)
-			{
-				// No current style, just add text literally
-				line.add(outputString.toString());
-			}
-			else
-			{
-				// Add remaining text to the current (unterminated) style
-				currentDecoratedFragment.add(outputString.toString());
-			}
+			addFragmentToLine(new TextFragment(outputString.toString()));
 			outputString.setLength(0); // Clear
 		}
 	}
@@ -308,18 +299,25 @@ public class FragmentParser
 			outputString.append(urlPrefix);
 			return;
 		}
+		addOutputToLine();
 		while (walker.isAlphaNumerical() || walker.matchOneOf(VALID_URL_CHARS))
 		{
 			outputString.append(walker.current());
 			walker.forward();
 		}
-		String text = outputString.toString();
-		if (maxLinkLength > 0 && maxLinkLength < text.length())
-		{
-			text = text.substring(0, maxLinkLength);
-		}
-		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
+		LinkFragment lf = makeLinkFragmentFromURL(urlPrefix, outputString.toString());
 		addFragmentToLine(lf);
 		outputString.setLength(0);
+	}
+
+	private LinkFragment makeLinkFragmentFromURL(String urlPrefix, String url)
+	{
+		String text = url;
+		if (maxLinkLength > 0 && maxLinkLength < text.length())
+		{
+			text = text.substring(0, maxLinkLength) + "\u2026"; // …
+		}
+		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
+		return lf;
 	}
 }

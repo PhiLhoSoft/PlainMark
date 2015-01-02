@@ -429,7 +429,6 @@ public class TestFragmentParser
 
 	//## Implicit URL detection or explicit URL markup
 
-	@Ignore
 	@Test
 	public void testURL_implicit_notAURL()
 	{
@@ -457,12 +456,13 @@ public class TestFragmentParser
 	@Test
 	public void testURL_implicit_long()
 	{
-		StringWalker walker = new StringWalker("http://www.example.com/foo/index.html#fragment to become a URL");
+		StringWalker walker = new StringWalker("The http://www.example.com/foo/index.html#fragment becomes a URL");
 
 		Line expected = new Line();
-		LinkFragment lf = new LinkFragment("www.example.com/foo/index.html", "http://www.example.com/foo/index.html#fragment");
+		expected.add("The ");
+		LinkFragment lf = new LinkFragment("www.example.com/foo/index.html…", "http://www.example.com/foo/index.html#fragment");
 		expected.add(lf);
-		expected.add(" to become a URL");
+		expected.add(" becomes a URL");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -470,12 +470,16 @@ public class TestFragmentParser
 	@Test
 	public void testURL_implicit_longer()
 	{
-		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49 to become a URL");
+		StringWalker walker = new StringWalker("URL in *bold http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49 text*");
 
 		Line expected = new Line();
-		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/?a=sp+", "http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49");
-		expected.add(lf);
-		expected.add(" to become a URL");
+		expected.add("URL in ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
+		df.add("bold ");
+		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/?a=sp+…", "http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49");
+		df.add(lf);
+		df.add(" text");
+		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker, 36)).isEqualTo(expected);
 	}
@@ -483,12 +487,12 @@ public class TestFragmentParser
 	@Test
 	public void testURL_implicit_longerShortened()
 	{
-		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/somewhere.html to become a URL");
+		StringWalker walker = new StringWalker("URL at end: http://www.example.com/foo-bar/~name/somewhere.html");
 
 		Line expected = new Line();
-		LinkFragment lf = new LinkFragment("www.example.com/foo-", "http://www.example.com/foo-bar/~name/somewhere.html");
+		expected.add("URL at end: ");
+		LinkFragment lf = new LinkFragment("www.example.com/foo-…", "http://www.example.com/foo-bar/~name/somewhere.html");
 		expected.add(lf);
-		expected.add(" to become a URL");
 
 		assertThat(FragmentParser.parse(walker, 20)).isEqualTo(expected);
 	}
@@ -496,12 +500,11 @@ public class TestFragmentParser
 	@Test
 	public void testURL_implicit_longerNoLimit()
 	{
-		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/somewhere.html#insideLink to become a URL");
+		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
 
 		Line expected = new Line();
-		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/somewhere.html#insideLink");
+		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/path/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
 		expected.add(lf);
-		expected.add(" to become a URL");
 
 		assertThat(FragmentParser.parse(walker, 0)).isEqualTo(expected);
 	}
@@ -510,7 +513,7 @@ public class TestFragmentParser
 	@Test
 	public void testURL_explicit()
 	{
-		StringWalker walker = new StringWalker("I (link)[http://www.example.com] to a URL");
+		StringWalker walker = new StringWalker("I [link](http://www.example.com) to a URL");
 
 		Line expected = new Line();
 		LinkFragment lf = new LinkFragment("link", "http://www.example.com");

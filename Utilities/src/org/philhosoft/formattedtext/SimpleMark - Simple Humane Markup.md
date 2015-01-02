@@ -53,9 +53,8 @@ because you cannot have a new bold style inside a fragment that is already bold,
 ## Links
 
 A link can be made explicitly by wrapping the link text in brackets `[]`, followed by the link itself in parentheses `()`.
-Example: ~[A well known destination](www.google.com) or ~[Popular programming site](https://github.com) become:
-[A well known destination](www.google.com) and [Popular programming site](https://github.com).
-If no schema is provided, it will be `http://`.
+Example: ~[A well known destination](http://www.google.com) or ~[Popular programming site](https://github.com) or ~[Relative link](../foo/bar.html) become:
+[A well known destination](www.google.com) and [Popular programming site](https://github.com)  or [Relative link](../foo/bar.html).
 The link text can have markup signs in it.
 
 ### URL autolinking
