@@ -1,0 +1,8 @@
+*.lnk
+
+*.class
+
+bin/
+output/
+test-bin/
+test-output/
