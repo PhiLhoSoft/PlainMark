@@ -10,7 +10,10 @@ import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 
 /**
- * Visitor that contexts HTML from some markup.
+ * Renders Fragments and Blocks to an HTML representation.
+ * <p>
+ * Uses default visitors for start and end of fragments and blocks.
+ * These can be overridden to customize the tags to use.
  */
 public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 {

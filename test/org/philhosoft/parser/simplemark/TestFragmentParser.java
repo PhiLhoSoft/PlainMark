@@ -111,6 +111,17 @@ public class TestFragmentParser
 	}
 
 	@Test
+	public void testSingleDecoration_tilde()
+	{
+		StringWalker walker = new StringWalker("This is ~ a ~tilde");
+
+		Line expected = new Line();
+		expected.add("This is ~ a ~tilde");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
 	public void testSingleDecoration_escapingItself()
 	{
 		StringWalker walker = new StringWalker("This is a ~~ tilde");
@@ -129,7 +140,7 @@ public class TestFragmentParser
 		Line expected = new Line();
 		expected.add("This is ");
 		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add("strong* and still");
+		df.add("strong* and still~");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);

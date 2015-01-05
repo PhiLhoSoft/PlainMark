@@ -1,14 +1,12 @@
 # SimpleMark: a Simple Humane Markup
 
 The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
-It is closer to the simplified version used in [Google+](http://webapps.stackexchange.com/questions/23078/what-are-all-the-formatting-options-for-a-google-post) (simplified bold / italic marks), [GitHub](https://help.github.com/articles/markdown-basics/) ([aka. GitHub Flavored Markdown](https://help.github.com/articles/github-flavored-markdown/), newlines mark line breaks, blocks of code) or [Stackoverflow](http://stackoverflow.com/editing-help) than to the original spec.
+
+SimpleMark is a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
 It aims more at writing short comments than writing big, complex documents. For the latter, something like [CommonMark](http://commonmark.org/) is better suited.
 
-One of the main departure from the original spec is that the newline character does a line break. No mandatory empty line nonsense, that confuse so much users and often result in mangled messages. Text area in browsers and in modern editors automatically wrap long lines, so auto-join of consecutive lines is an outdated feature.
-
-As a consequence, it simplifies greatly the spec (and the parsing!) and the usage of the markup.
-
-Likewise, like Google+, I favor one character signs for styling fragments, with distinct usages. The fact that * and _ have the same rendering in Markdown, and ~** and ~__ a different rendering (and ~*** or ~___ to combine them!) looks quite confusing...
+Newline characters do a line break in the rendering, equivalent to the `br` HTML tag.
+Two consecutive newlines (an empty line) create a new paragraph, the `p` tag in HTML.
 
 The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).
 These special characters can loose their meaning in some context, and can always be escaped with the tilde `~~` sign preceding them.
@@ -20,7 +18,7 @@ A fragment of text stops at the end of the line: authors rarely want to have sev
 
 ### Limitations
 
-There is no support for blockquotes (I prefer to use double quotes surrounding an italicized citation), tables or images. No HTML markup can be used, `&` ,`<` and `>` signs are escaped (kept literal) in an HTML rendering.
+There is no support for blockquotes (I prefer to use double quotes surrounding an italicized citation), tables or images. No HTML markup can be used, `&` ,`<` and `>` signs are escaped (kept literal) in an HTML rendering. HTML entities are not supported (might be, later).
 
 
 ## Styles
@@ -56,6 +54,8 @@ A link can be made explicitly by wrapping the link text in brackets `[]`, follow
 Example: ~[A well known destination](http://www.google.com) or ~[Popular programming site](https://github.com) or ~[Relative link](../foo/bar.html) become:
 [A well known destination](www.google.com) and [Popular programming site](https://github.com)  or [Relative link](../foo/bar.html).
 The link text can have markup signs in it.
+Raw (unescaped) `[]` and `()` characters are allowed in the link text and the URL if they are balanced (opening braces are followed by the same number of closing braces).
+If an explicit link is inside the link text of an explicit link, the external one is not rendered as link.
 
 ### URL autolinking
 

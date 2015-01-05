@@ -103,11 +103,15 @@ public class FragmentParser
 
 			if (walker.current() == ESCAPE_SIGN)
 			{
-				// Skip it
-				walker.forward();
-				// And consume next character (if any) literally
-				appendCurrentAndForward();
-				continue;
+				char next = walker.next();
+				if (decorations.get(next) != null || next == LINK_START_SIGN || next == ESCAPE_SIGN)
+				{
+					// Skip it
+					walker.forward();
+					// And consume next character (if any) literally
+					appendCurrentAndForward();
+					continue;
+				}
 			}
 			String urlPrefix = findURLPrefix();
 			if (urlPrefix != null)

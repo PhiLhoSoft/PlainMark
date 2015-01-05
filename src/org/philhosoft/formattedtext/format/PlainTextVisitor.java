@@ -7,6 +7,9 @@ import org.philhosoft.formattedtext.ast.MarkupVisitor;
 import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 
+/**
+ * Renders Fragments and Blocks to their textual content only.
+ */
 public class PlainTextVisitor implements MarkupVisitor<VisitorContext>
 {
 	@Override
