@@ -492,7 +492,10 @@ public class TestFragmentParser
 		df.add(" text");
 		expected.add(df);
 
-		assertThat(FragmentParser.parse(walker, 36)).isEqualTo(expected);
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(36);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
 	}
 
 	@Test
@@ -505,7 +508,10 @@ public class TestFragmentParser
 		LinkFragment lf = new LinkFragment("www.example.com/foo-…", "http://www.example.com/foo-bar/~name/somewhere.html");
 		expected.add(lf);
 
-		assertThat(FragmentParser.parse(walker, 20)).isEqualTo(expected);
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(20);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
 	}
 
 	@Test
@@ -517,7 +523,10 @@ public class TestFragmentParser
 		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/path/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
 		expected.add(lf);
 
-		assertThat(FragmentParser.parse(walker, 0)).isEqualTo(expected);
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(0);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
 	}
 
 	@Ignore

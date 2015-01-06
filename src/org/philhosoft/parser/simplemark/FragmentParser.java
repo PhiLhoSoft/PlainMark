@@ -2,8 +2,6 @@ package org.philhosoft.parser.simplemark;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.Fragment;
@@ -21,47 +19,16 @@ import org.philhosoft.parser.StringWalker;
  */
 public class FragmentParser
 {
-	private static final char ESCAPE_SIGN = '~';
-
-	private static final int LINK_MAX_LENGTH = 30;
-	private static final char LINK_START_SIGN = '[';
-	private static final char LINK_END_SIGN = ']';
-	private static final char URL_START_SIGN = '(';
-	private static final char URL_END_SIGN = ')';
-	private static final String[] urlPrefixes =
-	{
-		"http://", "https://", "ftp://", "ftps://",
-	};
-	// http://stackoverflow.com/questions/1856785/characters-allowed-in-a-url
-	// Used only for autolinking. Obviously, ) will terminate the URL in explicit links, and should be escaped to %29.
-	// ] can be escaped to %5D if needed, too.
-	private static final char[] VALID_URL_CHARS =
-	{
-		'-', '.', '_', '~', // unreserved (with alpha-num, of course)
-		':', '/', '?', '#', '[', ']', '@', // reserved, gen-delims
-		'!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=', // reserved, sub-delims
-		'%' // escape
-	};
-
-	private static final Map<Character, FragmentDecoration> decorations = new HashMap<Character, FragmentDecoration>();
-	{
-		decorations.put('*', FragmentDecoration.STRONG);
-		decorations.put('_', FragmentDecoration.EMPHASIS);
-		decorations.put('-', FragmentDecoration.DELETE);
-		decorations.put('`', FragmentDecoration.CODE);
-	}
-
-
 	private StringWalker walker;
-	private int maxLinkLength = LINK_MAX_LENGTH;
+	private ParsingParameters parsingParameters;
 	private Line line = new Line();
 	private Deque<DecoratedFragment> stack = new ArrayDeque<DecoratedFragment>();
 	private StringBuilder outputString = new StringBuilder();
 
-	private FragmentParser(StringWalker walker, int maxLinkLength)
+	private FragmentParser(StringWalker walker, ParsingParameters parsingParameters)
 	{
 		this.walker = walker;
-		this.maxLinkLength = maxLinkLength;
+		this.parsingParameters = parsingParameters;
 	}
 
 	/**
@@ -72,7 +39,7 @@ public class FragmentParser
 	 */
 	public static Line parse(StringWalker walker)
 	{
-		FragmentParser parser = new FragmentParser(walker, LINK_MAX_LENGTH);
+		FragmentParser parser = new FragmentParser(walker, new ParsingParameters());
 		return parser.parse();
 	}
 
@@ -85,9 +52,9 @@ public class FragmentParser
 	 * @param walker  the walker at the position where we want to start parsing
 	 * @param maxLinkLength  maximum length (without ellipsis) of the link text. If set to zero or lower, there is no limit.
 	 */
-	public static Line parse(StringWalker walker, int maxLinkLength)
+	public static Line parse(StringWalker walker, ParsingParameters parsingParameters)
 	{
-		FragmentParser parser = new FragmentParser(walker, maxLinkLength);
+		FragmentParser parser = new FragmentParser(walker, parsingParameters);
 		return parser.parse();
 	}
 
@@ -101,10 +68,10 @@ public class FragmentParser
 				break; // Don't go beyond, as this parser remains within line bounds
 			}
 
-			if (walker.current() == ESCAPE_SIGN)
+			if (walker.current() == parsingParameters.getEscapeSign())
 			{
 				char next = walker.next();
-				if (decorations.get(next) != null || next == LINK_START_SIGN || next == ESCAPE_SIGN)
+				if (parsingParameters.getDecoration(next) != null || next == ParsingParameters.LINK_START_SIGN || next == parsingParameters.getEscapeSign())
 				{
 					// Skip it
 					walker.forward();
@@ -119,7 +86,7 @@ public class FragmentParser
 				handleURL(urlPrefix);
 				continue;
 			}
-			FragmentDecoration decoration = decorations.get(walker.current());
+			FragmentDecoration decoration = parsingParameters.getDecoration(walker.current());
 			boolean processed = false;
 			if (decoration != null)
 			{
@@ -282,11 +249,7 @@ public class FragmentParser
 
 	private String findURLPrefix()
 	{
-		// Fast exit, to adjust if more prefixes are added
-		if (walker.current() != 'h' && walker.current() != 'f')
-			return null;
-
-		for (String p : urlPrefixes)
+		for (String p : parsingParameters.getUrlPrefixes())
 		{
 			if (walker.match(p))
 				return p;
@@ -304,7 +267,8 @@ public class FragmentParser
 			return;
 		}
 		addOutputToLine();
-		while (walker.isAlphaNumerical() || walker.matchOneOf(VALID_URL_CHARS))
+		char[] validURLChars = parsingParameters.getValidURLChars();
+		while (walker.isAlphaNumerical() || walker.matchOneOf(validURLChars))
 		{
 			outputString.append(walker.current());
 			walker.forward();
@@ -317,9 +281,10 @@ public class FragmentParser
 	private LinkFragment makeLinkFragmentFromURL(String urlPrefix, String url)
 	{
 		String text = url;
-		if (maxLinkLength > 0 && maxLinkLength < text.length())
+		int maxLinkLength = parsingParameters.getMaxLinkLength();
+		if (maxLinkLength  > 0 && maxLinkLength < text.length())
 		{
-			text = text.substring(0, maxLinkLength) + "\u2026"; // …
+			text = text.substring(0, maxLinkLength) + parsingParameters.getEllipsis();
 		}
 		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
 		return lf;

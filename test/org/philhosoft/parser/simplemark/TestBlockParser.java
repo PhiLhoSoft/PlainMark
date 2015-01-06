@@ -83,4 +83,106 @@ public class TestBlockParser
 		expected.add(new Line());
 		assertThat(result).isEqualTo(expected);
 	}
+
+	@Test
+	public void testTitle1_notTitle1()
+	{
+		StringWalker walker = new StringWalker("#A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add("#A title line");
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_notTitle2()
+	{
+		StringWalker walker = new StringWalker("  #A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add("#A title line");
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_notTitle3()
+	{
+		StringWalker walker = new StringWalker("~# A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add("# A title line");
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_notTitle4()
+	{
+		StringWalker walker = new StringWalker("~~# A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add("~# A title line");
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_notTitle5()
+	{
+		StringWalker walker = new StringWalker("~#A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add("~#A title line");
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_single_simple()
+	{
+		StringWalker walker = new StringWalker("# A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title = new TypedBlock(BlockType.TITLE1);
+		title.add("A title line");
+		expected.add(title);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_single_indented1()
+	{
+		StringWalker walker = new StringWalker("   # A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title = new TypedBlock(BlockType.TITLE1);
+		title.add("A title line");
+		expected.add(title);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitle1_single_indented2()
+	{
+		StringWalker walker = new StringWalker("   #    A title line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title = new TypedBlock(BlockType.TITLE1);
+		title.add("A title line");
+		expected.add(title);
+		assertThat(result).isEqualTo(expected);
+	}
 }
