@@ -17,6 +17,13 @@ public class TypedBlock implements Block
 		this.type = type;
 	}
 
+	@Override
+	public void add(String text)
+	{
+		Line line = new Line();
+		line.add(text);
+		blocks.add(line);
+	}
 	public void add(Block block)
 	{
 		blocks.add(block);

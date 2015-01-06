@@ -19,6 +19,7 @@ public class Line implements Block
 		fragments.add(fragment);
 	}
 
+	@Override
 	public void add(String text)
 	{
 		fragments.add(new TextFragment(text));

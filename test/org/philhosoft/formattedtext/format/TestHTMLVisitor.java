@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
+import org.philhosoft.formattedtext.ast.TypedBlock;
 
 
 public class TestHTMLVisitor
@@ -27,6 +28,21 @@ public class TestHTMLVisitor
 				"\n<strong>Strong init, followed by</strong> plain text and <a href='http://www.example.com'>a nice <em>link</em></a><br>\n" +
 				"\nBoring plain text and <em>emphasized text <strong>and even </strong><del>deleted text</del><code> fixed width text</code>.</em>\n" +
 				"</div>\n");
+	}
+
+	@Test
+	public void testBlocks_empty() throws Exception
+	{
+		Block document = new TypedBlock(BlockType.DOCUMENT);
+
+		HTMLVisitor visitor = new HTMLVisitor();
+		ContextWithStringBuilder ctx = new ContextWithStringBuilder();
+		document.accept(visitor, ctx);
+
+//		System.out.println(ctx.asString());
+		assertThat(ctx.asString()).isEqualTo(
+				"<div>\n" +
+				"\n</div>\n");
 	}
 
 	@Test

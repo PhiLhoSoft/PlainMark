@@ -71,6 +71,22 @@ public class StringWalker
 	}
 
 	/**
+	 * Goes forward, skipping whitespace characters (space & tab only).
+	 *
+	 * @return the number of whitespace characters that has been skipped
+	 */
+	public int skipSpaces()
+	{
+		int counter = 0;
+		while (current == ' ' || current == '\t')
+		{
+			forward();
+			counter++;
+		}
+		return counter;
+	}
+
+	/**
 	 * True if we are no an end-of-line character<br>
 	 * (classical CR and LF, but also Unicode EOL code points).
 	 */
