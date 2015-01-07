@@ -43,11 +43,11 @@ public class ParsingParameters
 		blockTypesPerPrefix.put("# ", BlockType.TITLE1);
 		blockTypesPerPrefix.put("## ", BlockType.TITLE2);
 		blockTypesPerPrefix.put("### ", BlockType.TITLE3);
-		blockTypesPerPrefix.put("```", BlockType.CODE);
 		blockTypesPerPrefix.put("* ", BlockType.LIST_ITEM);
 		blockTypesPerPrefix.put("- ", BlockType.LIST_ITEM);
 		blockTypesPerPrefix.put("+ ", BlockType.LIST_ITEM);
 	}
+	private String codeBlockSign = "```";
 
 	private int maxLinkLength = 30;
 	private String ellipsis = "\u2026";
@@ -104,5 +104,9 @@ public class ParsingParameters
 	public Set<String> getBlockTypePrefixes()
 	{
 		return blockTypesPerPrefix.keySet();
+	}
+	public String getCodeBlockSign()
+	{
+		return codeBlockSign;
 	}
 }

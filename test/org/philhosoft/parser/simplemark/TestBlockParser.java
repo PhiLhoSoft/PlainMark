@@ -351,6 +351,40 @@ public class TestBlockParser
 		assertThat(result).isEqualTo(expected);
 	}
 
+	@Test
+	public void testCodeBlock()
+	{
+		StringWalker walker = new StringWalker("Plain text before\n" +
+				"```\n" +
+				"# include <stdio>\n" +
+				"\n" +
+				"int main()\n" +
+				"{\n" +
+				"  return 0;  \n" +
+				"}\n\n" +
+				"// Last *line*\n\n" +
+				"```\n" +
+				"And plain text after");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add(createParagraph("Plain text before"));
+		TypedBlock code = new TypedBlock(BlockType.CODE);
+		code.add("# include <stdio>");
+		code.add("");
+		code.add("int main()");
+		code.add("{");
+		code.add("  return 0;  ");
+		code.add("}");
+		code.add("");
+		code.add("// Last *line*");
+		code.add("");
+		expected.add(code);
+		expected.add(createParagraph("And plain text after"));
+		assertThat(result).isEqualTo(expected);
+	}
+
 	private TypedBlock createParagraph(String... texts)
 	{
 		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH);

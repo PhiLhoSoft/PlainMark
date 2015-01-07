@@ -88,6 +88,14 @@ public class StringWalker
 		return counter;
 	}
 
+	public void goToNextLine()
+	{
+		do
+		{
+			forward();
+		} while (!atLineStart && hasMore());
+	}
+
 	/**
 	 * True if we are no an end-of-line character<br>
 	 * (classical CR and LF, but also Unicode EOL code points).

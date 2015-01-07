@@ -126,6 +126,8 @@ becomes:
 ## Code blocks
 
 Like in GitHub, a series of three backticks `~`~`~`` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~`~`~`` is met.
+Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).
+The code block signs *must* start on the first column.
 
 
 # Parsing rules

@@ -219,4 +219,33 @@ public class TestStringWalker
 		assertThat(walker.atLineEnd()).isFalse();
 		assertThat(walker.atLineStart()).isTrue();
 	}
+
+	@Test
+	public void testSkipline()
+	{
+		String s = "// Comment\nand new line";
+		StringWalker walker = new StringWalker(s);
+
+		assertThat(walker.match("//")).isTrue();
+
+		walker.goToNextLine();
+
+		assertThat(walker.hasMore()).isTrue();
+		assertThat(walker.atLineEnd()).isFalse();
+		assertThat(walker.atLineStart()).isTrue();
+		assertThat(walker.current()).isEqualTo('a');
+
+		walker.forward();
+
+		assertThat(walker.hasMore()).isTrue();
+		assertThat(walker.atLineEnd()).isFalse();
+		assertThat(walker.atLineStart()).isFalse();
+		assertThat(walker.current()).isEqualTo('n');
+
+		walker.goToNextLine();
+
+		assertThat(walker.hasMore()).isFalse();
+		assertThat(walker.atLineEnd()).isTrue();
+		assertThat(walker.atLineStart()).isFalse();
+	}
 }

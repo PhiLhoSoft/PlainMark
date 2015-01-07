@@ -18,7 +18,7 @@ public class BlockParser
 	private ParsingParameters parsingParameters;
 	private TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
 	private Deque<TypedBlock> stack = new ArrayDeque<TypedBlock>();
-//	private StringBuilder outputString = new StringBuilder();
+	private boolean inCodeBlock;
 
 	private BlockParser(StringWalker walker, ParsingParameters parsingParameters)
 	{
@@ -43,6 +43,16 @@ public class BlockParser
 	{
 		while (walker.hasMore())
 		{
+			if (walker.match(parsingParameters.getCodeBlockSign()))
+			{
+				manageCodeBlockSign();
+			}
+			if (inCodeBlock)
+			{
+				addCurrentLine();
+				continue;
+			}
+
 			walker.skipSpaces();
 			if (walker.atLineEnd())
 			{
@@ -56,6 +66,24 @@ public class BlockParser
 		popStack();
 
 		return document;
+	}
+
+	/**
+	 *
+	 */
+	private void manageCodeBlockSign()
+	{
+		inCodeBlock = !inCodeBlock;
+		if (inCodeBlock)
+		{
+			popPreviousBlockIfNeeded(BlockType.CODE);
+			stack.push(new TypedBlock(BlockType.CODE));
+		}
+		else
+		{
+			document.add(stack.pop());
+		}
+		walker.goToNextLine();
 	}
 
 	private void manageEmptyLine()
@@ -141,18 +169,14 @@ public class BlockParser
 		BlockType previousType = getPreviousType();
 		if (previousType == null)
 			return;
-		if (isTitleBlock(blockType) &&
-				// We don't support titles in paragraphs
-				(previousType == BlockType.PARAGRAPH ||
-				// And don't support sub-blocks in titles
-				isTitleBlock(previousType) && blockType != previousType))
+		if (isTitleBlock(previousType) && blockType != previousType)
 		{
+			// We don't support sub-blocks in titles
 			document.add(stack.pop());
 		}
-		else if (blockType == BlockType.PARAGRAPH &&
-				// We don't accept other blocks in paragraphs
-				previousType != BlockType.PARAGRAPH)
+		else if (previousType == BlockType.PARAGRAPH && blockType != BlockType.PARAGRAPH)
 		{
+			// We don't accept other blocks in paragraphs
 			document.add(stack.pop());
 		}
 	}
@@ -184,6 +208,22 @@ public class BlockParser
 		{
 			block.add(line);
 		}
+	}
+
+	private void addCurrentLine()
+	{
+		StringBuilder sb = new StringBuilder();
+		do
+		{
+			if (!walker.atLineEnd())
+			{
+				sb.append(walker.current());
+			}
+			walker.forward();
+		} while (!walker.atLineStart() && walker.hasMore());
+		Line line = new Line();
+		line.add(sb.toString());
+		addLine(line);
 	}
 
 	private boolean isTitleBlock(BlockType blockType)
