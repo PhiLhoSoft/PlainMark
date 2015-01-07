@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.Line;
-import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 import org.philhosoft.parser.StringWalker;
 
@@ -21,12 +20,12 @@ public class TestBlockParser
 
 		StringWalker walker1 = new StringWalker("Simple plain text");
 		TypedBlock expected1 = new TypedBlock(BlockType.DOCUMENT);
-		expected1.add(new Line(new TextFragment("Simple plain text")));
+		expected1.add(createParagraph("Simple plain text"));
 		assertThat(BlockParser.parse(walker1)).isEqualTo(expected1);
 
 		StringWalker walker2 = new StringWalker("   Indented plain text");
 		TypedBlock expected2 = new TypedBlock(BlockType.DOCUMENT);
-		expected2.add(new Line(new TextFragment("Indented plain text")));
+		expected2.add(createParagraph("Indented plain text"));
 		assertThat(BlockParser.parse(walker2)).isEqualTo(expected2);
 	}
 
@@ -38,8 +37,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(new Line(new TextFragment("Two")));
-		expected.add(new Line(new TextFragment("Lines")));
+		expected.add(createParagraph("Two", "Lines"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -51,9 +49,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(new Line(new TextFragment("Various")));
-		expected.add(new Line(new TextFragment("More or less long")));
-		expected.add(new Line(new TextFragment("Lines of text")));
+		expected.add(createParagraph("Various", "More or less long", "Lines of text"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -65,8 +61,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(new Line(new TextFragment("With trailing")));
-		expected.add(new Line(new TextFragment("Newline at end")));
+		expected.add(createParagraph("With trailing", "Newline at end"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -78,9 +73,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(new Line(new TextFragment("With trailing")));
-		expected.add(new Line(new TextFragment("Newlines at end")));
-		expected.add(new Line());
+		expected.add(createParagraph("With trailing", "Newlines at end", ""));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -92,7 +85,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("#Almost a title line");
+		expected.add(createParagraph("#Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -104,7 +97,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("#Almost a title line");
+		expected.add(createParagraph("#Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -116,7 +109,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(": # Almost a title line");
+		expected.add(createParagraph(": # Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -128,7 +121,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("# Almost a title line");
+		expected.add(createParagraph("# Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -140,7 +133,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("~# Almost a title line");
+		expected.add(createParagraph("~# Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -152,7 +145,7 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("~#Almost a title line");
+		expected.add(createParagraph("~#Almost a title line"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -241,20 +234,20 @@ public class TestBlockParser
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock title1 = new TypedBlock(BlockType.TITLE1);
 		title1.add("Title 1");
-		Line line1 = new Line(new TextFragment("Simple line"));
+		Block paragraph1 = createParagraph("Simple line");
 		TypedBlock title2 = new TypedBlock(BlockType.TITLE2);
 		title2.add("Title 2");
-		Line line2 = new Line(new TextFragment("Plain line"));
+		Block paragraph2 = createParagraph("Plain line");
 		TypedBlock title3 = new TypedBlock(BlockType.TITLE3);
 		title3.add("Title 3");
-		Line line3 = new Line(new TextFragment("Boring line"));
+		Block paragraph3 = createParagraph("Boring line");
 
 		expected.add(title1);
-		expected.add(line1);
+		expected.add(paragraph1);
 		expected.add(title2);
-		expected.add(line2);
+		expected.add(paragraph2);
 		expected.add(title3);
-		expected.add(line3);
+		expected.add(paragraph3);
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -266,7 +259,24 @@ public class TestBlockParser
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add("#### A title line of fourth level (not implemented!)");
+		expected.add(createParagraph("#### A title line of fourth level (not implemented!)"));
 		assertThat(result).isEqualTo(expected);
+	}
+
+	private TypedBlock createParagraph(String... texts)
+	{
+		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH);
+		for (String text : texts)
+		{
+			if (text.isEmpty())
+			{
+				block.add(new Line());
+			}
+			else
+			{
+				block.add(text);
+			}
+		}
+		return block;
 	}
 }

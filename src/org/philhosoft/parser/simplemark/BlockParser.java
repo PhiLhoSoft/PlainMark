@@ -18,7 +18,7 @@ public class BlockParser
 	private ParsingParameters parsingParameters;
 	private TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
 	private Deque<TypedBlock> stack = new ArrayDeque<TypedBlock>();
-	private StringBuilder outputString = new StringBuilder();
+//	private StringBuilder outputString = new StringBuilder();
 
 	private BlockParser(StringWalker walker, ParsingParameters parsingParameters)
 	{
@@ -33,7 +33,7 @@ public class BlockParser
 	public static Block parse(StringWalker walker, ParsingParameters parsingParameters)
 	{
 		if (walker == null || !walker.atLineStart())
-			throw new IllegalStateException("Parsiing must start at the the beginning of a line");
+			throw new IllegalStateException("Parsing must start at the beginning of a line");
 
 		BlockParser parser = new BlockParser(walker, parsingParameters);
 		return parser.parse();
@@ -49,17 +49,14 @@ public class BlockParser
 			if (blockType == null)
 			{
 				// Plain line
-				add(line);
+				addLine(line);
 			}
 			else
 			{
 				TypedBlock block = new TypedBlock(blockType);
-				stack.add(block);
-				add(line);
-				if (blockType == BlockType.TITLE1 || blockType == BlockType.TITLE2 || blockType == BlockType.TITLE3)
-				{
-					document.add(stack.pop());
-				}
+				block.add(line);
+				popPreviousBlockIfNeeded(blockType);
+				addBlock(block);
 			}
 		}
 
@@ -106,16 +103,50 @@ public class BlockParser
 		walker.skipSpaces();
 	}
 
-	private void add(Line line)
+	private void popPreviousBlockIfNeeded(BlockType blockType)
+	{
+		if (blockType == BlockType.TITLE1 || blockType == BlockType.TITLE2 || blockType == BlockType.TITLE3)
+		{
+			TypedBlock currentBlock = stack.peek();
+			if (currentBlock != null && currentBlock.getType() == BlockType.PARAGRAPH)
+			{
+				// We don't support titles in paragraphs
+				stack.pop();
+			}
+		}
+	}
+
+	private void addParagraph(Line line)
+	{
+		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH);
+		block.add(line);
+		document.add(block);
+		stack.push(block);
+	}
+
+	private void addLine(Line line)
 	{
 		TypedBlock block = stack.peek();
 		if (block == null)
 		{
-			document.add(line);
+			addParagraph(line);
 		}
 		else
 		{
 			block.add(line);
+		}
+	}
+
+	private void addBlock(TypedBlock block)
+	{
+		TypedBlock currentBlock = stack.peek();
+		if (currentBlock == null)
+		{
+			document.add(block);
+		}
+		else
+		{
+			currentBlock.add(block);
 		}
 	}
 }
