@@ -60,7 +60,7 @@ If an explicit link is inside the link text of an explicit link, the external on
 
 ### URL autolinking
 
-URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (eg. autolinking google.com or www.example.com/whatever).
+URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
 
 Markup signs are ignored while parsing an URL.
 The link text will be the URL without the schema (to be shorter). If the URL is longer than a predefined (ajustable) length, it will be shortened with ellipsis.
@@ -71,6 +71,7 @@ The link text will be the URL without the schema (to be shorter). If the URL is 
 SimpleMark has only three levels of title.
 In HTML rendering, they are not necessarily mapped to `h1` to `h3`. They might be mapped to `h3` to `h5`, for example, or even be just `div`s with their own classes.
 These levels are denoted as a series of one to three sharp signs `#` at the start of the line, followed by a space. One `#` denotes the highest level, three is for the lowest one.
+If two consecutive lines are titles with the same level, it makes a multi-line title (ie. with a line break inside).
 Titles should be rendered with a bolder font, with size bigger than main text, and some vertical space before and after the line.
 
 Example:

@@ -202,4 +202,21 @@ public class TestStringWalker
 		assertThat(walker.current()).isEqualTo('B');
 		assertThat(walker.next()).isEqualTo('r');
 	}
+
+	@Test
+	public void testStartWithNewline()
+	{
+		String s = "\nLine Break";
+		StringWalker walker = new StringWalker(s);
+
+		assertThat(walker.hasMore()).isTrue();
+		assertThat(walker.atLineEnd()).isTrue();
+		assertThat(walker.atLineStart()).isTrue();
+
+		walker.forward();
+
+		assertThat(walker.hasMore()).isTrue();
+		assertThat(walker.atLineEnd()).isFalse();
+		assertThat(walker.atLineStart()).isTrue();
+	}
 }

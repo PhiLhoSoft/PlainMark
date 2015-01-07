@@ -29,6 +29,7 @@ public class StringWalker
 		current = next;
 		cursor++;
 		fetchNextCharacter();
+		updateAtLineEnd();
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class StringWalker
 			cursor++;
 			previous = current;
 			current = next;
-			atLineEnd = isOnLineTerminator() || !hasMore();
+			updateAtLineEnd();
 			fetchNextCharacter();
 		}
 		else
@@ -59,6 +60,7 @@ public class StringWalker
 			previous = current = next = PLACEHOLDER_CHAR;
 		}
 	}
+
 	/**
 	 * Advances by n characters (see {@link #forward()} remark on EOL).
 	 */
@@ -210,6 +212,14 @@ public class StringWalker
 
 		return defaultChar;
 	}
+	/**
+	 *
+	 */
+	private void updateAtLineEnd()
+	{
+		atLineEnd = isOnLineTerminator() || !hasMore();
+	}
+
 	private boolean isOnLineTerminator()
 	{
 		/*

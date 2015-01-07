@@ -68,12 +68,38 @@ public class TestBlockParser
 	@Test
 	public void testPlainMultiline_4()
 	{
-		StringWalker walker = new StringWalker("With trailing\nNewlines at end\n\n");
+		StringWalker walker = new StringWalker("With trailing\nNewlines\n\n");
 
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
-		expected.add(createParagraph("With trailing", "Newlines at end", ""));
+		expected.add(createParagraph("With trailing", "Newlines"));
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testPlainMultiline_5()
+	{
+		StringWalker walker = new StringWalker("\n\n\n\nWith leading and trailing\n\n\nNewlines\n\n\n");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add(createParagraph("With leading and trailing"));
+		expected.add(createParagraph("Newlines"));
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testPlainMultiParagraph()
+	{
+		StringWalker walker = new StringWalker("First paragraph\nwith line break.\n\nAnd another paragraph");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		expected.add(createParagraph("First paragraph", "with line break."));
+		expected.add(createParagraph("And another paragraph"));
 		assertThat(result).isEqualTo(expected);
 	}
 
@@ -178,15 +204,16 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testTitle1_single_indented2()
+	public void testTitle1_twoLines()
 	{
-		StringWalker walker = new StringWalker("   #    A title line");
+		StringWalker walker = new StringWalker("# A title line\n# On two lines");
 
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock title = new TypedBlock(BlockType.TITLE1);
 		title.add("A title line");
+		title.add("On two lines");
 		expected.add(title);
 		assertThat(result).isEqualTo(expected);
 	}
@@ -220,7 +247,33 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testTitlesAndLines()
+	public void testTitles()
+	{
+		StringWalker walker = new StringWalker("# Title 1\n" +
+				"## Title 2\n" +
+				"### Title 3\n" +
+				"Boring line\n");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title1 = new TypedBlock(BlockType.TITLE1);
+		title1.add("Title 1");
+		TypedBlock title2 = new TypedBlock(BlockType.TITLE2);
+		title2.add("Title 2");
+		TypedBlock title3 = new TypedBlock(BlockType.TITLE3);
+		title3.add("Title 3");
+		Block paragraph = createParagraph("Boring line");
+
+		expected.add(title1);
+		expected.add(title2);
+		expected.add(title3);
+		expected.add(paragraph);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitlesAndLines1()
 	{
 		StringWalker walker = new StringWalker("# Title 1\n" +
 				"Simple line\n" +
@@ -248,6 +301,41 @@ public class TestBlockParser
 		expected.add(paragraph2);
 		expected.add(title3);
 		expected.add(paragraph3);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTitlesAndLines2()
+	{
+		StringWalker walker = new StringWalker("# Title 1\n\n" +
+				"Simple line\n\n" +
+				"## Title 2\n\n" +
+				"Plain line\n\n" +
+				"Other paragraph\nwith line break.\n\n" +
+				"### Title 3\n\n" +
+				"Boring line\n\n");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title1 = new TypedBlock(BlockType.TITLE1);
+		title1.add("Title 1");
+		Block paragraph1 = createParagraph("Simple line");
+		TypedBlock title2 = new TypedBlock(BlockType.TITLE2);
+		title2.add("Title 2");
+		Block paragraph2 = createParagraph("Plain line");
+		Block paragraph3 = createParagraph("Other paragraph", "with line break.");
+		TypedBlock title3 = new TypedBlock(BlockType.TITLE3);
+		title3.add("Title 3");
+		Block paragraph4 = createParagraph("Boring line");
+
+		expected.add(title1);
+		expected.add(paragraph1);
+		expected.add(title2);
+		expected.add(paragraph2);
+		expected.add(paragraph3);
+		expected.add(title3);
+		expected.add(paragraph4);
 		assertThat(result).isEqualTo(expected);
 	}
 
