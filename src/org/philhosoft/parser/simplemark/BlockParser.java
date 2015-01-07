@@ -14,15 +14,6 @@ import org.philhosoft.parser.StringWalker;
  */
 public class BlockParser
 {
-	private static final String TITLE_1_PREFIX = "# ";
-	private static final String TITLE_2_PREFIX = "## ";
-	private static final String TITLE_3_PREFIX = "### ";
-	private static final String CODE_SIGN = "```";
-	private static final String LIST_ITEM_U1_PREFIX = "* ";
-	private static final String LIST_ITEM_U2_PREFIX = "- ";
-	private static final String LIST_ITEM_U3_PREFIX = "+ ";
-	private static final String LIST_ITEM_ORDERED_SUFFIX = ".";
-
 	private StringWalker walker;
 	private ParsingParameters parsingParameters;
 	private TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
@@ -54,19 +45,18 @@ public class BlockParser
 		{
 			walker.skipSpaces();
 			BlockType blockType = checkBlockTypeWithEscape();
+			Line line = FragmentParser.parse(walker, parsingParameters);
 			if (blockType == null)
 			{
 				// Plain line
-				Line line = FragmentParser.parse(walker);
 				add(line);
 			}
 			else
 			{
 				TypedBlock block = new TypedBlock(blockType);
 				stack.add(block);
-				Line line = FragmentParser.parse(walker);
 				add(line);
-				if (blockType == BlockType.TITLE1)
+				if (blockType == BlockType.TITLE1 || blockType == BlockType.TITLE2 || blockType == BlockType.TITLE3)
 				{
 					document.add(stack.pop());
 				}
@@ -80,34 +70,39 @@ public class BlockParser
 	{
 		if (walker.current() == parsingParameters.getEscapeSign())
 		{
-			walker.forward();
-			BlockType blockType = checkBlockType();
-			if (blockType != null || walker.current() == parsingParameters.getEscapeSign())
+			String prefix = checkBlockType(1);
+			if (prefix != null || walker.next() == parsingParameters.getEscapeSign())
 			{
-				// Skip it
+				// Skip this escape (really escaping something)
+				walker.forward();
 			}
+			// Otherwise, the escape sign is kept literally
+			// And we are not on a block prefix
 			return null;
 		}
-		BlockType blockType = checkBlockType();
-		processBlockType(blockType);
+
+		String prefix = checkBlockType(0);
+		BlockType blockType = parsingParameters.getBlockType(prefix);
+		processBlockType(prefix, blockType);
 		return blockType;
 	}
 
-	private BlockType checkBlockType()
+	private String checkBlockType(int offset)
 	{
-		if (walker.match(TITLE_1_PREFIX))
+		for (String prefix : parsingParameters.getBlockTypePrefixes())
 		{
-			return BlockType.TITLE1;
+			if (walker.matchAt(offset, prefix))
+				return prefix;
 		}
+
 		return null;
 	}
 
-	private void processBlockType(BlockType type)
+	private void processBlockType(String prefix, BlockType type)
 	{
-		if (type == BlockType.TITLE1)
-		{
-			walker.forward(TITLE_1_PREFIX.length());
-		}
+		if (prefix == null)
+			return;
+		walker.forward(prefix.length());
 		walker.skipSpaces();
 	}
 

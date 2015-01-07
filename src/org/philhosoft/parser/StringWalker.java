@@ -160,6 +160,21 @@ public class StringWalker
 		}
 		return true;
 	}
+	/**
+	 * match() with forward offset.
+	 */
+	public boolean matchAt(int offset, String s)
+	{
+		if (s == null || s.isEmpty())
+			return false; // Whatever...
+		// Same algo without the quick exits
+		for (int i = 0; i < s.length(); i++)
+		{
+			if (s.charAt(i) != safeCharAt(offset + cursor + i, PLACEHOLDER_CHAR))
+				return false;
+		}
+		return true;
+	}
 
 	/**
 	 * True if the current character is in the given list of chars.

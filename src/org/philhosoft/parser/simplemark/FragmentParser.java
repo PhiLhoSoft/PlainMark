@@ -71,7 +71,7 @@ public class FragmentParser
 			if (walker.current() == parsingParameters.getEscapeSign())
 			{
 				char next = walker.next();
-				if (parsingParameters.getDecoration(next) != null || next == ParsingParameters.LINK_START_SIGN || next == parsingParameters.getEscapeSign())
+				if (parsingParameters.getFragmentDecoration(next) != null || next == ParsingParameters.LINK_START_SIGN || next == parsingParameters.getEscapeSign())
 				{
 					// Skip it
 					walker.forward();
@@ -86,7 +86,7 @@ public class FragmentParser
 				handleURL(urlPrefix);
 				continue;
 			}
-			FragmentDecoration decoration = parsingParameters.getDecoration(walker.current());
+			FragmentDecoration decoration = parsingParameters.getFragmentDecoration(walker.current());
 			boolean processed = false;
 			if (decoration != null)
 			{

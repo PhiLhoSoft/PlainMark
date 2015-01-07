@@ -26,7 +26,9 @@ public class TestStringWalker
 		assertThat(walker.match('S', 'i')).isTrue();
 		assertThat(walker.match('S', 'I')).isFalse();
 		assertThat(walker.match("Simple")).isTrue();
+		assertThat(walker.matchAt(3, "ple")).isTrue();
 		assertThat(walker.match("Sample")).isFalse();
+		assertThat(walker.matchAt(3, "Simple")).isFalse();
 
 		walker.forward();
 
@@ -43,7 +45,9 @@ public class TestStringWalker
 		assertThat(walker.match('i', 'm')).isTrue();
 		assertThat(walker.match('i', 'x')).isFalse();
 		assertThat(walker.match("impl")).isTrue();
+		assertThat(walker.matchAt(2, "ple")).isTrue();
 		assertThat(walker.match("mple")).isFalse();
+		assertThat(walker.matchAt(2, "ample")).isFalse();
 
 		walker.forward(3);
 
@@ -59,8 +63,11 @@ public class TestStringWalker
 		assertThat(walker.match('x')).isFalse();
 		assertThat(walker.match('l', 'e')).isTrue();
 		assertThat(walker.match('x', 'x')).isFalse();
+		assertThat(walker.match("le")).isTrue();
+		assertThat(walker.matchAt(0, "le")).isTrue();
 		assertThat(walker.match("le  ")).isFalse();
 		assertThat(walker.match("leet")).isFalse();
+		assertThat(walker.matchAt(1, "le")).isFalse();
 
 		walker.forward(2);
 
@@ -75,6 +82,7 @@ public class TestStringWalker
 		assertThat(walker.match('x')).isFalse();
 		assertThat(walker.match('x', 'x')).isFalse();
 		assertThat(walker.match("meet")).isFalse();
+		assertThat(walker.matchAt(10, "meet")).isFalse();
 
 		walker.forward();
 
@@ -89,6 +97,7 @@ public class TestStringWalker
 		assertThat(walker.match('x')).isFalse();
 		assertThat(walker.match('x', 'x')).isFalse();
 		assertThat(walker.match("meet")).isFalse();
+		assertThat(walker.matchAt(7, "meet")).isFalse();
 	}
 
 	@Test

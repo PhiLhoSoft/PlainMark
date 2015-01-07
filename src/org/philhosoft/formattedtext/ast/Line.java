@@ -57,6 +57,6 @@ public class Line implements Block
 	@Override
 	public String toString()
 	{
-		return "Line[" + fragments + "]";
+		return "\nLine[" + fragments + "]";
 	}
 }

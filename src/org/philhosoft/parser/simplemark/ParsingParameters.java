@@ -2,7 +2,9 @@ package org.philhosoft.parser.simplemark;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 
 public class ParsingParameters
@@ -35,6 +37,16 @@ public class ParsingParameters
 		decorations.put('_', FragmentDecoration.EMPHASIS);
 		decorations.put('-', FragmentDecoration.DELETE);
 		decorations.put('`', FragmentDecoration.CODE);
+	}
+	private static final Map<String, BlockType> blockTypesPerPrefix = new HashMap<String, BlockType>();
+	{
+		blockTypesPerPrefix.put("# ", BlockType.TITLE1);
+		blockTypesPerPrefix.put("## ", BlockType.TITLE2);
+		blockTypesPerPrefix.put("### ", BlockType.TITLE3);
+		blockTypesPerPrefix.put("```", BlockType.CODE);
+		blockTypesPerPrefix.put("* ", BlockType.LIST_ITEM);
+		blockTypesPerPrefix.put("- ", BlockType.LIST_ITEM);
+		blockTypesPerPrefix.put("+ ", BlockType.LIST_ITEM);
 	}
 
 	private int maxLinkLength = 30;
@@ -81,8 +93,16 @@ public class ParsingParameters
 		this.validURLChars = validURLChars;
 	}
 
-	public FragmentDecoration getDecoration(char sign)
+	public FragmentDecoration getFragmentDecoration(char sign)
 	{
 		return decorations.get(sign);
+	}
+	public BlockType getBlockType(String prefix)
+	{
+		return blockTypesPerPrefix.get(prefix);
+	}
+	public Set<String> getBlockTypePrefixes()
+	{
+		return blockTypesPerPrefix.keySet();
 	}
 }

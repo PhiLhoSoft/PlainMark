@@ -62,6 +62,6 @@ public class TypedBlock implements Block
 	@Override
 	public String toString()
 	{
-		return "TypedBlock{type=" + type + ", blocks=" + blocks + "}";
+		return "\nTypedBlock{type=" + type + ", blocks=" + blocks + "}";
 	}
 }
