@@ -21,8 +21,7 @@ public class FormattedTextExamples
 		// Build the AST the way it will be by the (scannerless) parser
 
 		// First line
-		Line firstLine = new Line();
-		firstLine.add(new TextFragment("Start of text with "));
+		Line firstLine = new Line("Start of text with ");
 		firstLine.add(new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasis inside"));
 		firstLine.add(new TextFragment("."));
 
@@ -31,20 +30,18 @@ public class FormattedTextExamples
 		document.add(firstLine);
 
 		// Second line, starting bold
-		Line secondLine = new Line();
-		document.add(secondLine);
-		secondLine.add(new DecoratedFragment(FragmentDecoration.STRONG, "Strong init, followed by"));
+		Line secondLine = new Line(new DecoratedFragment(FragmentDecoration.STRONG, "Strong init, followed by"));
 		secondLine.add(new TextFragment(" plain text and "));
+		document.add(secondLine);
 
-		LinkFragment link = new LinkFragment("a nice ", "http://www.example.com");
+		LinkFragment link = new LinkFragment("a nice ", "http://www.example.com/?a=b&c=~x~");
 		DecoratedFragment linkE = new DecoratedFragment(FragmentDecoration.EMPHASIS, "link");
 		link.add(linkE);
 		secondLine.add(link);
 
 		// Meet new start of line
-		Line lastLine = new Line();
+		Line lastLine = new Line("Boring plain text and ");
 		document.add(lastLine);
-		lastLine.add(new TextFragment("Boring plain text and "));
 
 		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasized text ");
 		df.add(new DecoratedFragment(FragmentDecoration.STRONG, "and even "));
@@ -60,8 +57,7 @@ public class FormattedTextExamples
 	{
 		// First line, title
 		TypedBlock firstBlock = new TypedBlock(BlockType.TITLE1);
-		Line title = new Line();
-		title.add(new TextFragment("This is a title"));
+		Line title = new Line("This is a title");
 		firstBlock.add(title);
 
 		// Meet new start of line
@@ -71,9 +67,8 @@ public class FormattedTextExamples
 		// Second line, plain text
 		if (withSimpleLines)
 		{
-			Line secondLine = new Line();
+			Line secondLine = new Line("Line Two");
 			document.add(secondLine);
-			secondLine.add(new TextFragment("Line Two"));
 		}
 
 		// List
@@ -82,7 +77,7 @@ public class FormattedTextExamples
 		for (int i = 0; i < 3; i++)
 		{
 			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM);
-			item.add(new Line(new TextFragment("Item " + i)));
+			item.add(new Line("Item <" + i + ">"));
 			list.add(item);
 		}
 
@@ -91,21 +86,19 @@ public class FormattedTextExamples
 		{
 			Line emptyLine = new Line();
 			document.add(emptyLine);
-//			emptyLine.add(new TextFragment(""));
 		}
 
 		// Code block
 		TypedBlock code = new TypedBlock(BlockType.CODE);
 		document.add(code);
-		code.add(new Line(new TextFragment("Block of code")));
-		code.add(new Line(new TextFragment("on several lines")));
+		code.add(new Line("Block of code"));
+		code.add(new Line("on several lines"));
 
 		// Last line, plain text
 		if (withSimpleLines)
 		{
-			Line lastLine = new Line();
+			Line lastLine = new Line("Last line");
 			document.add(lastLine);
-			lastLine.add(new TextFragment("Last line"));
 		}
 
 		return document;
@@ -115,8 +108,7 @@ public class FormattedTextExamples
 	{
 		// First line, title
 		TypedBlock firstBlock = new TypedBlock(BlockType.TITLE1);
-		Line title = new Line();
-		title.add(new TextFragment("This is a title"));
+		Line title = new Line("This is a title");
 		firstBlock.add(title);
 
 		// Meet new start of line
@@ -124,11 +116,10 @@ public class FormattedTextExamples
 		document.add(firstBlock);
 
 		// Second line
-		Line secondLine = new Line();
-		document.add(secondLine);
-		secondLine.add(new TextFragment("Start of text with "));
+		Line secondLine = new Line("Start of text with ");
 		secondLine.add(new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasis inside"));
 		secondLine.add(new TextFragment("."));
+		document.add(secondLine);
 
 		// List
 		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
@@ -136,11 +127,11 @@ public class FormattedTextExamples
 		for (int i = 0; i < 3; i++)
 		{
 			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM);
-			Line line = new Line(new TextFragment("Item " + i + " - "));
+			Line line = new Line("Item " + i + " & ");
 			line.add(new DecoratedFragment(FragmentDecoration.STRONG, "Strong fragment, followed by"));
 			line.add(new TextFragment(" plain text and "));
 
-			LinkFragment link = new LinkFragment("a nice ", "http://www.example.com/" + i);
+			LinkFragment link = new LinkFragment("a nice ", "http://www.example.com/#anchor" + i);
 			DecoratedFragment linkE = new DecoratedFragment(FragmentDecoration.EMPHASIS, "link (" + i + ")");
 			link.add(linkE);
 			line.add(link);
@@ -151,12 +142,11 @@ public class FormattedTextExamples
 		// Code block
 		TypedBlock code = new TypedBlock(BlockType.CODE);
 		document.add(code);
-		code.add(new Line(new TextFragment("Block of code")));
-		code.add(new Line(new TextFragment("on several lines")));
+		code.add(new Line("Block of code"));
+		code.add(new Line("on several lines"));
 
 		// Last line
-		Line lastLine = new Line();
-		lastLine.add(new TextFragment("Boring plain text and "));
+		Line lastLine = new Line("Boring plain text and ");
 
 		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasized text ");
 		df.add(new DecoratedFragment(FragmentDecoration.STRONG, "and even "));

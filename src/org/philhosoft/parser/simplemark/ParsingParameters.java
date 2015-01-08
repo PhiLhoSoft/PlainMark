@@ -38,14 +38,14 @@ public class ParsingParameters
 		decorations.put('-', FragmentDecoration.DELETE);
 		decorations.put('`', FragmentDecoration.CODE);
 	}
-	private static final Map<String, BlockType> blockTypesPerPrefix = new HashMap<String, BlockType>();
+	private static final Map<String, BlockType> blockTypesPerSign = new HashMap<String, BlockType>();
 	{
-		blockTypesPerPrefix.put("# ", BlockType.TITLE1);
-		blockTypesPerPrefix.put("## ", BlockType.TITLE2);
-		blockTypesPerPrefix.put("### ", BlockType.TITLE3);
-		blockTypesPerPrefix.put("* ", BlockType.LIST_ITEM);
-		blockTypesPerPrefix.put("- ", BlockType.LIST_ITEM);
-		blockTypesPerPrefix.put("+ ", BlockType.LIST_ITEM);
+		blockTypesPerSign.put("# ", BlockType.TITLE1);
+		blockTypesPerSign.put("## ", BlockType.TITLE2);
+		blockTypesPerSign.put("### ", BlockType.TITLE3);
+		blockTypesPerSign.put("* ", BlockType.LIST_ITEM);
+		blockTypesPerSign.put("- ", BlockType.LIST_ITEM);
+		blockTypesPerSign.put("+ ", BlockType.LIST_ITEM);
 	}
 	private String codeBlockSign = "```";
 
@@ -97,13 +97,13 @@ public class ParsingParameters
 	{
 		return decorations.get(sign);
 	}
-	public BlockType getBlockType(String prefix)
+	public BlockType getBlockType(String blockSign)
 	{
-		return blockTypesPerPrefix.get(prefix);
+		return blockTypesPerSign.get(blockSign);
 	}
-	public Set<String> getBlockTypePrefixes()
+	public Set<String> getBlockTypeSigns()
 	{
-		return blockTypesPerPrefix.keySet();
+		return blockTypesPerSign.keySet();
 	}
 	public String getCodeBlockSign()
 	{

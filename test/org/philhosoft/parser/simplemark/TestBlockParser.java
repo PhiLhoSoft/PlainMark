@@ -2,10 +2,13 @@ package org.philhosoft.parser.simplemark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
+import org.philhosoft.formattedtext.ast.DecoratedFragment;
+import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 import org.philhosoft.parser.StringWalker;
@@ -352,9 +355,23 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testCodeBlock()
+	public void testCodeBlock_empty()
 	{
-		StringWalker walker = new StringWalker("Plain text before\n" +
+		StringWalker walker = new StringWalker("```\n```\n");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock code = new TypedBlock(BlockType.CODE);
+		expected.add(code);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testCodeBlock_regular()
+	{
+		StringWalker walker = new StringWalker(
+				"Plain text before\n" +
 				"```\n" +
 				"# include <stdio>\n" +
 				"\n" +
@@ -382,6 +399,32 @@ public class TestBlockParser
 		code.add("");
 		expected.add(code);
 		expected.add(createParagraph("And plain text after"));
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Ignore // TODO
+	@Test
+	public void testCodeBlock_escaped()
+	{
+		StringWalker walker = new StringWalker(
+				"Plain text before\n" +
+				"~```\n" +
+				"// Comment *line*\n\n" +
+				"~```\n" +
+				"And plain text after");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock p1 = new TypedBlock(BlockType.PARAGRAPH);
+		Line l1 = new Line("Plain text before");
+		DecoratedFragment df1 = new DecoratedFragment(FragmentDecoration.CODE, "`");
+		l1.add(df1);
+		p1.add(l1);
+//		Line l2 = new Line();
+		TypedBlock p2 = createParagraph("`", "And plain text after");
+		expected.add(p1);
+		expected.add(p2);
 		assertThat(result).isEqualTo(expected);
 	}
 

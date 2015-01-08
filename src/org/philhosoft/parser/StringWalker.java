@@ -200,9 +200,26 @@ public class StringWalker
 	}
 
 	/** More restrictive than Character.isLetterOrDigit(). */
-	public boolean isAlphaNumerical()
+	public boolean isAlphaNumerical(char c)
 	{
-		return current >= 'A' && current <= 'Z' || current >= 'a' && current <= 'z' || current >= '0' && current <= '9';
+		return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
+	}
+
+	public boolean isLineTerminator(char c)
+	{
+		/*
+		From Java's Pattern class JavaDoc:
+		A line terminator is a one- or two-character sequence that marks the end of a line of the input character sequence.
+		The following are recognized as line terminators:
+
+		A newline (line feed) character ('\n'),
+		A carriage-return character followed immediately by a newline character ("\r\n"),
+		A standalone carriage-return character ('\r'),
+		A next-line character ('\u0085'),
+		A line-separator character ('\u2028'), or
+		A paragraph-separator character ('\u2029).
+		*/
+		return c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029';
 	}
 
 	private void fetchNextCharacter()
@@ -215,33 +232,33 @@ public class StringWalker
 	}
 	private char safeCharAt(int pos, char defaultChar)
 	{
-		if (pos < walked.length())
+		if (pos >= 0 && pos < walked.length())
 			return walked.charAt(pos);
 
 		return defaultChar;
 	}
-	/**
-	 *
-	 */
+
 	private void updateAtLineEnd()
 	{
-		atLineEnd = isOnLineTerminator() || !hasMore();
+		atLineEnd = isLineTerminator(current) || !hasMore();
 	}
 
-	private boolean isOnLineTerminator()
+	@Override
+	public String toString()
 	{
-		/*
-		From Java's Pattern class JavaDoc:
-		A line terminator is a one- or two-character sequence that marks the end of a line of the input character sequence.
-		The following are recognized as line terminators:
-
-		A newline (line feed) character ('\n'),
-		A carriage-return character followed immediately by a newline character ("\r\n"),
-		A standalone carriage-return character ('\r'),
-		A next-line character ('\u0085'),
-		A line-separator character (''), or
-		A paragraph-separator character ('\u2029).
-		*/
-		return current == '\n' || current == '\r' || current == '\u0085' || current == '\u2028' || current == '\u2029';
+		String position = "";
+		position += atLineStart ? "line start" : "";
+		position += atLineEnd ? "line end" : "";
+		return "StringWalker[cursor=" + cursor + (position.isEmpty() ? "" : ", " + position) +
+				", context=" + toString(previous) + toString(current) + toString(next) +
+				", [" + (hasMore() ? walked.substring(cursor) : "") + "]]";
+	}
+	private String toString(char c)
+	{
+		if (c == PLACEHOLDER_CHAR)
+			return "<none>";
+		if (isLineTerminator(c))
+			return "\\n";
+		return Character.toString(c);
 	}
 }

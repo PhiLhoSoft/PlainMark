@@ -17,10 +17,10 @@ import org.philhosoft.formattedtext.ast.TypedBlock;
  */
 public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 {
-	private FragmentDecoration.Visitor<VisitorContext> fragmentStartVisitor = new FragmentStartVisitor();
-	private FragmentDecoration.Visitor<VisitorContext> fragmentEndVisitor = new FragmentEndVisitor();
-	private BlockType.Visitor<VisitorContext> blockStartVisitor = new BlockStartVisitor();
-	private BlockType.Visitor<VisitorContext> blockEndVisitor = new BlockEndVisitor();
+	private FragmentDecoration.Visitor<VisitorContext> fragmentStartVisitor = new HTMLFragmentStartVisitor();
+	private FragmentDecoration.Visitor<VisitorContext> fragmentEndVisitor = new HTMLFragmentEndVisitor();
+	private BlockType.Visitor<VisitorContext> blockStartVisitor = new HTMLBlockStartVisitor();
+	private BlockType.Visitor<VisitorContext> blockEndVisitor = new HTMLBlockEndVisitor();
 
 	/**
 	 * Allows overriding the default fragment visitors.
@@ -54,13 +54,13 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(TextFragment fragment, VisitorContext context)
 	{
-		context.append(fragment.getText());
+		context.append(normalize(fragment.getText()));
 	}
 
 	@Override
 	public void visit(LinkFragment fragment, VisitorContext context)
 	{
-		context.append("<a href='").append(fragment.getUrl()).append("'>");
+		context.append("<a href='").append(normalize(fragment.getUrl())).append("'>");
 		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
 		context.append("</a>");
 	}
@@ -109,5 +109,10 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 			}
 			context.append("\n");
 		}
+	}
+
+	private String normalize(String text)
+	{
+		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 }

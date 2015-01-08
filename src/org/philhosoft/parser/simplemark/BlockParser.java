@@ -46,6 +46,7 @@ public class BlockParser
 			if (walker.match(parsingParameters.getCodeBlockSign()))
 			{
 				manageCodeBlockSign();
+				continue;
 			}
 			if (inCodeBlock)
 			{
@@ -100,7 +101,7 @@ public class BlockParser
 
 	private void manageLine()
 	{
-		BlockType blockType = checkBlockTypeWithEscape();
+		BlockType blockType = checkBlockSignWithEscape();
 		Line line = FragmentParser.parse(walker, parsingParameters);
 		if (blockType == null)
 		{
@@ -124,43 +125,43 @@ public class BlockParser
 		}
 	}
 
-	private BlockType checkBlockTypeWithEscape()
+	private BlockType checkBlockSignWithEscape()
 	{
 		if (walker.current() == parsingParameters.getEscapeSign())
 		{
-			String prefix = checkBlockType(1);
-			if (prefix != null || walker.next() == parsingParameters.getEscapeSign())
+			String blockSign = checkBlockType(1);
+			if (blockSign != null || walker.next() == parsingParameters.getEscapeSign())
 			{
 				// Skip this escape (really escaping something)
 				walker.forward();
 			}
 			// Otherwise, the escape sign is kept literally
-			// And we are not on a block prefix
+			// And we are not on a block sign
 			return null;
 		}
 
-		String prefix = checkBlockType(0);
-		BlockType blockType = parsingParameters.getBlockType(prefix);
-		processBlockType(prefix, blockType);
+		String blockSign = checkBlockType(0);
+		BlockType blockType = parsingParameters.getBlockType(blockSign);
+		processBlockSign(blockSign);
 		return blockType;
 	}
 
 	private String checkBlockType(int offset)
 	{
-		for (String prefix : parsingParameters.getBlockTypePrefixes())
+		for (String blockSign : parsingParameters.getBlockTypeSigns())
 		{
-			if (walker.matchAt(offset, prefix))
-				return prefix;
+			if (walker.matchAt(offset, blockSign))
+				return blockSign;
 		}
 
 		return null;
 	}
 
-	private void processBlockType(String prefix, BlockType type)
+	private void processBlockSign(String blockSign)
 	{
-		if (prefix == null)
+		if (blockSign == null)
 			return;
-		walker.forward(prefix.length());
+		walker.forward(blockSign.length());
 		walker.skipSpaces();
 	}
 
@@ -210,6 +211,9 @@ public class BlockParser
 		}
 	}
 
+	/**
+	 * Raw add, for code blocks.
+	 */
 	private void addCurrentLine()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -221,8 +225,7 @@ public class BlockParser
 			}
 			walker.forward();
 		} while (!walker.atLineStart() && walker.hasMore());
-		Line line = new Line();
-		line.add(sb.toString());
+		Line line = new Line(sb.toString());
 		addLine(line);
 	}
 

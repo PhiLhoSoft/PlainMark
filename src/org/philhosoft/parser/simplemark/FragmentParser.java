@@ -71,7 +71,9 @@ public class FragmentParser
 			if (walker.current() == parsingParameters.getEscapeSign())
 			{
 				char next = walker.next();
-				if (parsingParameters.getFragmentDecoration(next) != null || next == ParsingParameters.LINK_START_SIGN || next == parsingParameters.getEscapeSign())
+				if (parsingParameters.getFragmentDecoration(next) != null ||
+						next == ParsingParameters.LINK_START_SIGN ||
+						next == parsingParameters.getEscapeSign())
 				{
 					// Skip it
 					walker.forward();
@@ -260,7 +262,7 @@ public class FragmentParser
 	private void handleURL(String urlPrefix)
 	{
 		walker.forward(urlPrefix.length());
-		if (!walker.isAlphaNumerical())
+		if (!walker.isAlphaNumerical(walker.current()))
 		{
 			// Probably just mentioning a raw schema
 			outputString.append(urlPrefix);
@@ -268,7 +270,7 @@ public class FragmentParser
 		}
 		addOutputToLine();
 		char[] validURLChars = parsingParameters.getValidURLChars();
-		while (walker.isAlphaNumerical() || walker.matchOneOf(validURLChars))
+		while (walker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
 		{
 			outputString.append(walker.current());
 			walker.forward();

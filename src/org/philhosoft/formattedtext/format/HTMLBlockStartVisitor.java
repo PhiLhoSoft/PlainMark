@@ -2,7 +2,7 @@ package org.philhosoft.formattedtext.format;
 
 import org.philhosoft.formattedtext.ast.BlockType;
 
-public class BlockStartVisitor implements BlockType.Visitor<VisitorContext>
+public class HTMLBlockStartVisitor implements BlockType.Visitor<VisitorContext>
 {
 	@Override
 	public void visitDocument(VisitorContext context)

@@ -13,13 +13,13 @@ public class LinkFragment implements Fragment
 	}
 	public LinkFragment(String text, String url)
 	{
-		fragments.add(new TextFragment(text));
+		add(text);
 		this.url = url;
 	}
 
 	public void add(String text)
 	{
-		fragments.add(new TextFragment(text));
+		add(new TextFragment(text));
 	}
 	public void add(Fragment newFragment)
 	{

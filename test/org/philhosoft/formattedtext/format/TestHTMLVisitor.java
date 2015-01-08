@@ -25,7 +25,7 @@ public class TestHTMLVisitor
 		assertThat(ctx.asString()).isEqualTo(
 				"<div>\n" +
 				"Start of text with <em>emphasis inside</em>.<br>\n" +
-				"\n<strong>Strong init, followed by</strong> plain text and <a href='http://www.example.com'>a nice <em>link</em></a><br>\n" +
+				"\n<strong>Strong init, followed by</strong> plain text and <a href='http://www.example.com/?a=b&amp;c=~x~'>a nice <em>link</em></a><br>\n" +
 				"\nBoring plain text and <em>emphasized text <strong>and even </strong><del>deleted text</del><code> fixed width text</code>.</em>\n" +
 				"</div>\n");
 	}
@@ -59,9 +59,9 @@ public class TestHTMLVisitor
 				"<div>\n" +
 				"<h3>This is a title</h3>\n" +
 				"<ul>\n" +
-				"<li>Item 0</li>\n" +
-				"<li>Item 1</li>\n" +
-				"<li>Item 2</li>\n" +
+				"<li>Item &lt;0&gt;</li>\n" +
+				"<li>Item &lt;1&gt;</li>\n" +
+				"<li>Item &lt;2&gt;</li>\n" +
 				"</ul>\n" +
 				"<pre><code>\n" +
 				"Block of code\n" +
@@ -85,9 +85,9 @@ public class TestHTMLVisitor
 				"<h3>This is a title</h3>\n" +
 				"Line Two<br>\n" +
 				"\n<ul>\n" +
-				"<li>Item 0</li>\n" +
-				"<li>Item 1</li>\n" +
-				"<li>Item 2</li>\n" +
+				"<li>Item &lt;0&gt;</li>\n" +
+				"<li>Item &lt;1&gt;</li>\n" +
+				"<li>Item &lt;2&gt;</li>\n" +
 				"</ul>\n" +
 				"<br>\n" +
 				"\n<pre><code>\n" +
@@ -114,9 +114,9 @@ public class TestHTMLVisitor
 				"Start of text with <em>emphasis inside</em>.<br>\n" +
                 "\n" +
 				"<ul>\n" +
-				"<li>Item 0 - <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/0'>a nice <em>link (0)</em></a></li>\n" +
-				"<li>Item 1 - <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/1'>a nice <em>link (1)</em></a></li>\n" +
-				"<li>Item 2 - <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/2'>a nice <em>link (2)</em></a></li>\n" +
+				"<li>Item 0 &amp; <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/#anchor0'>a nice <em>link (0)</em></a></li>\n" +
+				"<li>Item 1 &amp; <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/#anchor1'>a nice <em>link (1)</em></a></li>\n" +
+				"<li>Item 2 &amp; <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/#anchor2'>a nice <em>link (2)</em></a></li>\n" +
 				"</ul>\n" +
 				"<pre><code>\n" +
 				"Block of code\n" +
@@ -133,7 +133,7 @@ public class TestHTMLVisitor
 		Block document = FormattedTextExamples.buildMixedBlockFragments();
 
 		HTMLVisitor visitor = new HTMLVisitor();
-		FragmentDecoration.Visitor<VisitorContext> fragmentStartVisitor = new FragmentStartVisitor()
+		FragmentDecoration.Visitor<VisitorContext> fragmentStartVisitor = new HTMLFragmentStartVisitor()
 		{
 			@Override
 			public void visitStrong(VisitorContext context)
@@ -146,7 +146,7 @@ public class TestHTMLVisitor
 				context.append("<i>");
 			}
 		};
-		FragmentDecoration.Visitor<VisitorContext> fragmentEndVisitor = new FragmentEndVisitor()
+		FragmentDecoration.Visitor<VisitorContext> fragmentEndVisitor = new HTMLFragmentEndVisitor()
 		{
 			@Override
 			public void visitStrong(VisitorContext context)
@@ -160,7 +160,7 @@ public class TestHTMLVisitor
 			}
 		};;
 		visitor.setFragmentVisitors(fragmentStartVisitor, fragmentEndVisitor);
-		BlockType.Visitor<VisitorContext> blockStartVisitor = new BlockStartVisitor()
+		BlockType.Visitor<VisitorContext> blockStartVisitor = new HTMLBlockStartVisitor()
 		{
 			@Override
 			public void visitTitle1(VisitorContext context)
@@ -168,7 +168,7 @@ public class TestHTMLVisitor
 				context.append("<h1>");
 			}
 		};
-		BlockType.Visitor<VisitorContext> blockEndVisitor = new BlockEndVisitor()
+		BlockType.Visitor<VisitorContext> blockEndVisitor = new HTMLBlockEndVisitor()
 		{
 			@Override
 			public void visitTitle1(VisitorContext context)
@@ -187,9 +187,9 @@ public class TestHTMLVisitor
 				"Start of text with <i>emphasis inside</i>.<br>\n" +
                 "\n" +
 				"<ul>\n" +
-				"<li>Item 0 - <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/0'>a nice <i>link (0)</i></a></li>\n" +
-				"<li>Item 1 - <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/1'>a nice <i>link (1)</i></a></li>\n" +
-				"<li>Item 2 - <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/2'>a nice <i>link (2)</i></a></li>\n" +
+				"<li>Item 0 &amp; <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/#anchor0'>a nice <i>link (0)</i></a></li>\n" +
+				"<li>Item 1 &amp; <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/#anchor1'>a nice <i>link (1)</i></a></li>\n" +
+				"<li>Item 2 &amp; <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/#anchor2'>a nice <i>link (2)</i></a></li>\n" +
 				"</ul>\n" +
 				"<pre><code>\n" +
 				"Block of code\n" +

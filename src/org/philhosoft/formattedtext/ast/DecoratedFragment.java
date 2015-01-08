@@ -19,12 +19,12 @@ public class DecoratedFragment implements Fragment
 	public DecoratedFragment(FragmentDecoration decoration, String firstText)
 	{
 		this(decoration);
-		fragments.add(new TextFragment(firstText));
+		add(firstText);
 	}
 
 	public void add(String text)
 	{
-		fragments.add(new TextFragment(text));
+		add(new TextFragment(text));
 	}
 	public void add(Fragment fragment)
 	{

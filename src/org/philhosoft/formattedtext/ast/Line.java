@@ -16,13 +16,17 @@ public class Line implements Block
 	}
 	public Line(Fragment fragment)
 	{
-		fragments.add(fragment);
+		add(fragment);
+	}
+	public Line(String text)
+	{
+		add(text);
 	}
 
 	@Override
 	public void add(String text)
 	{
-		fragments.add(new TextFragment(text));
+		add(new TextFragment(text));
 	}
 	public void add(Fragment fragment)
 	{

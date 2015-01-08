@@ -2,7 +2,7 @@ package org.philhosoft.formattedtext.format;
 
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 
-public class FragmentStartVisitor implements FragmentDecoration.Visitor<VisitorContext>
+public class HTMLFragmentStartVisitor implements FragmentDecoration.Visitor<VisitorContext>
 {
 	@Override
 	public void visitStrong(VisitorContext context)

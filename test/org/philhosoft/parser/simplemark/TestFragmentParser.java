@@ -9,7 +9,6 @@ import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.LinkFragment;
-import org.philhosoft.formattedtext.ast.TextFragment;
 import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
 import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.parser.StringWalker;
@@ -20,10 +19,8 @@ public class TestFragmentParser
 	@Test
 	public void testPlain()
 	{
-		assertThat(FragmentParser.parse(new StringWalker(""))).isEqualTo(
-				new Line());
-		assertThat(FragmentParser.parse(new StringWalker("Simple plain text"))).isEqualTo(
-				new Line(new TextFragment("Simple plain text")));
+		assertThat(FragmentParser.parse(new StringWalker(""))).isEqualTo(new Line());
+		assertThat(FragmentParser.parse(new StringWalker("Simple plain text"))).isEqualTo(new Line("Simple plain text"));
 	}
 
 	@Test
@@ -31,8 +28,7 @@ public class TestFragmentParser
 	{
 		// Fragment parser stops on a line end
 		StringWalker walker = new StringWalker("Two\nLines");
-		assertThat(FragmentParser.parse(walker)).isEqualTo(
-				new Line(new TextFragment("Two")));
+		assertThat(FragmentParser.parse(walker)).isEqualTo(new Line("Two"));
 		assertThat(walker.atLineStart()).isTrue();
 		assertThat(walker.current()).isEqualTo('L');
 	}
@@ -46,8 +42,7 @@ public class TestFragmentParser
 		StringWalker walker = new StringWalker("*Strong* text");
 
 		Line expected = new Line();
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add("Strong");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "Strong");
 		expected.add(df);
 		expected.add(" text");
 
@@ -61,8 +56,7 @@ public class TestFragmentParser
 
 		Line expected = new Line();
 		expected.add("An ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		df.add("emphasized");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasized");
 		expected.add(df);
 		expected.add(" text");
 
@@ -74,10 +68,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("A text -deleted-");
 
-		Line expected = new Line();
-		expected.add("A text ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.DELETE);
-		df.add("deleted");
+		Line expected = new Line("A text ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.DELETE, "deleted");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -89,12 +81,32 @@ public class TestFragmentParser
 		// Verifying proper context checking
 		StringWalker walker = new StringWalker("Quoting: \"_Quoted Fragment_\"");
 
-		Line expected = new Line();
-		expected.add("Quoting: \"");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		df.add("Quoted Fragment");
+		Line expected = new Line("Quoting: \"");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "Quoted Fragment");
 		expected.add(df);
 		expected.add("\"");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Ignore // TODO
+	@Test
+	public void testSingleDecoration_doubleCode()
+	{
+		StringWalker walker = new StringWalker("Empty code `` is kept literal");
+
+		Line expected = new Line("Empty code `` is kept literal");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Ignore // TODO
+	@Test
+	public void testSingleDecoration_doubleStrong()
+	{
+		StringWalker walker = new StringWalker("Empty strong ** is kept literal");
+
+		Line expected = new Line("Empty strong ** is kept literal");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -104,8 +116,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is not ~*strong~*");
 
-		Line expected = new Line();
-		expected.add("This is not *strong*");
+		Line expected = new Line("This is not *strong*");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -115,8 +126,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is ~ a ~tilde");
 
-		Line expected = new Line();
-		expected.add("This is ~ a ~tilde");
+		Line expected = new Line("This is ~ a ~tilde");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -126,8 +136,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is a ~~ tilde");
 
-		Line expected = new Line();
-		expected.add("This is a ~ tilde");
+		Line expected = new Line("This is a ~ tilde");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -137,10 +146,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *strong~* and still~");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add("strong* and still~");
+		Line expected = new Line("This is ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "strong* and still~");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -151,12 +158,9 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("An _emphasized and even *strong* text_.");
 
-		Line expected = new Line();
-		expected.add("An ");
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("emphasized and even ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		dfs.add("strong");
+		Line expected = new Line("An ");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasized and even ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong");
 		dfe.add(dfs);
 		dfe.add(" text");
 		expected.add(dfe);
@@ -170,11 +174,9 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *_strong emphasized_* text.");
 
-		Line expected = new Line();
-		expected.add("This is ");
+		Line expected = new Line("This is ");
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong emphasized");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized");
 		dfs.add(dfe);
 		expected.add(dfs);
 		expected.add(" text.");
@@ -189,11 +191,9 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This text is *_strong emphasized_*");
 
-		Line expected = new Line();
-		expected.add("This text is ");
+		Line expected = new Line("This text is ");
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong emphasized");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized");
 		dfs.add(dfe);
 		expected.add(dfs);
 
@@ -205,11 +205,9 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *_strong emphasized_ then strong* text.");
 
-		Line expected = new Line();
-		expected.add("This is ");
+		Line expected = new Line("This is ");
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong emphasized");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized");
 		dfs.add(dfe);
 		dfs.add(" then strong");
 		expected.add(dfs);
@@ -223,13 +221,10 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *strong and _strong emphasized_* text.");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		dfs.add("strong and ");
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
+		Line expected = new Line("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong and ");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized");
 		dfs.add(dfe);
-		dfe.add("strong emphasized");
 		expected.add(dfs);
 		expected.add(" text.");
 
@@ -243,15 +238,11 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *strong and _strong `(code)` emphasized_ text*.");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		dfs.add("strong and ");
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong ");
+		Line expected = new Line("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong and ");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong ");
 		dfs.add(dfe);
-		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE);
-		dfc.add("(code)");
+		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE, "(code)");
 		dfe.add(dfc);
 		dfe.add(" emphasized");
 		dfs.add(" text");
@@ -269,10 +260,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("A text `fixed width");
 
-		Line expected = new Line();
-		expected.add("A text ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE);
-		df.add("fixed width");
+		Line expected = new Line("A text ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE, "fixed width");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -283,10 +272,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("A text `fixed width ");
 
-		Line expected = new Line();
-		expected.add("A text ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE);
-		df.add("fixed width ");
+		Line expected = new Line("A text ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE, "fixed width ");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -298,8 +285,7 @@ public class TestFragmentParser
 		StringWalker walker = new StringWalker("*Strong text");
 
 		Line expected = new Line();
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add("Strong text");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "Strong text");
 		expected.add(df);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -310,13 +296,10 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is `code style and -deleted");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.CODE);
-		dfs.add("code style and ");
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.DELETE);
+		Line expected = new Line("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.CODE, "code style and ");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.DELETE, "deleted");
 		dfs.add(dfe);
-		dfe.add("deleted");
 		expected.add(dfs);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -330,11 +313,9 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *_strong emphasized*_ text.");
 
-		Line expected = new Line();
-		expected.add("This is ");
+		Line expected = new Line("This is ");
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong emphasized*"); // Strong inside strong (at higher level) is ignored
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized*"); // Strong inside strong (at higher level) is ignored
 		dfs.add(dfe);
 		dfs.add(" text.");
 		expected.add(dfs);
@@ -347,14 +328,11 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *_strong `emphasized*_ text`.");
 
-		Line expected = new Line();
-		expected.add("This is ");
+		Line expected = new Line("This is ");
 		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS);
-		dfe.add("strong "); // Strong inside strong is ignored
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong "); // Strong inside strong is ignored
 		dfs.add(dfe);
-		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE);
-		dfc.add("emphasized*_ text"); // Decoration inside same decoration (at higher level) is ignored
+		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE, "emphasized*_ text"); // Decoration inside same decoration (at higher level) is ignored
 		dfe.add(dfc);
 		dfe.add(".");
 		expected.add(dfs);
@@ -370,8 +348,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is not*strong at all");
 
-		Line expected = new Line();
-		expected.add("This is not*strong at all");
+		Line expected = new Line("This is not*strong at all");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -381,8 +358,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is in-line and var_name");
 
-		Line expected = new Line();
-		expected.add("This is in-line and var_name");
+		Line expected = new Line("This is in-line and var_name");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -392,8 +368,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("Isolated * star or - dash");
 
-		Line expected = new Line();
-		expected.add("Isolated * star or - dash");
+		Line expected = new Line("Isolated * star or - dash");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -403,8 +378,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("x*y_2-7");
 
-		Line expected = new Line();
-		expected.add("x*y_2-7");
+		Line expected = new Line("x*y_2-7");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -414,10 +388,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *strong not*ending at all");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		dfs.add("strong not*ending at all");
+		Line expected = new Line("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong not*ending at all");
 		expected.add(dfs);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -428,10 +400,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("This is *strong not * ending at all");
 
-		Line expected = new Line();
-		expected.add("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		dfs.add("strong not * ending at all");
+		Line expected = new Line("This is ");
+		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong not * ending at all");
 		expected.add(dfs);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
@@ -445,8 +415,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("Using the http:// schema (or https://)");
 
-		Line expected = new Line();
-		expected.add("Using the http:// schema (or https://)");
+		Line expected = new Line("Using the http:// schema (or https://)");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -469,8 +438,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("The http://www.example.com/foo/index.html#fragment becomes a URL");
 
-		Line expected = new Line();
-		expected.add("The ");
+		Line expected = new Line("The ");
 		LinkFragment lf = new LinkFragment("www.example.com/foo/index.html…", "http://www.example.com/foo/index.html#fragment");
 		expected.add(lf);
 		expected.add(" becomes a URL");
@@ -483,10 +451,8 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("URL in *bold http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49 text*");
 
-		Line expected = new Line();
-		expected.add("URL in ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG);
-		df.add("bold ");
+		Line expected = new Line("URL in ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "bold ");
 		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/?a=sp+…", "http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49");
 		df.add(lf);
 		df.add(" text");
@@ -503,8 +469,7 @@ public class TestFragmentParser
 	{
 		StringWalker walker = new StringWalker("URL at end: http://www.example.com/foo-bar/~name/somewhere.html");
 
-		Line expected = new Line();
-		expected.add("URL at end: ");
+		Line expected = new Line("URL at end: ");
 		LinkFragment lf = new LinkFragment("www.example.com/foo-…", "http://www.example.com/foo-bar/~name/somewhere.html");
 		expected.add(lf);
 

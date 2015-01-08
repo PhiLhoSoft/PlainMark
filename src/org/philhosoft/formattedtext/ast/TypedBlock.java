@@ -20,9 +20,8 @@ public class TypedBlock implements Block
 	@Override
 	public void add(String text)
 	{
-		Line line = new Line();
-		line.add(text);
-		blocks.add(line);
+		Line line = new Line(text);
+		add(line);
 	}
 	public void add(Block block)
 	{
