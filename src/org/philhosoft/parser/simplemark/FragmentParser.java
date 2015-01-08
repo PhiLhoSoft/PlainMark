@@ -64,46 +64,45 @@ public class FragmentParser
 		{
 			if (walker.atLineEnd())
 			{
-				walker.forward(); // Skip line end
+				walker.forward(); // Go to start of next line, if any
 				break; // Don't go beyond, as this parser remains within line bounds
 			}
 
-			if (walker.current() == parsingParameters.getEscapeSign())
-			{
-				char next = walker.next();
-				if (parsingParameters.getFragmentDecoration(next) != null ||
-						next == ParsingParameters.LINK_START_SIGN ||
-						next == parsingParameters.getEscapeSign())
-				{
-					// Skip it
-					walker.forward();
-					// And consume next character (if any) literally
-					appendCurrentAndForward();
-					continue;
-				}
-			}
+			if (handleEscapeSign())
+				continue;
+
 			String urlPrefix = findURLPrefix();
 			if (urlPrefix != null)
 			{
 				handleURL(urlPrefix);
 				continue;
 			}
-			FragmentDecoration decoration = parsingParameters.getFragmentDecoration(walker.current());
-			boolean processed = false;
-			if (decoration != null)
-			{
-				processed = handleDecorationSign(decoration);
-			}
-			if (!processed)
-			{
-				appendCurrentAndForward();
-			}
+
+			handleDecoration();
 		}
 
 		// We reached the end of line, see if some text remains to be processed
-		addOutputToLine();
+		popStack();
 
 		return line;
+	}
+
+	private boolean handleEscapeSign()
+	{
+		if (walker.current() != parsingParameters.getEscapeSign())
+			return false;
+		char next = walker.next();
+		if (parsingParameters.getFragmentDecoration(next) != null ||
+				next == ParsingParameters.LINK_START_SIGN ||
+				next == parsingParameters.getEscapeSign())
+		{
+			// Skip it
+			walker.forward();
+			// And consume next character (if any) literally
+			appendCurrentAndForward();
+			return true;
+		}
+		return false;
 	}
 
 	private void appendCurrentAndForward()
@@ -115,11 +114,25 @@ public class FragmentParser
 		}
 	}
 
+	private void handleDecoration()
+	{
+		FragmentDecoration decoration = parsingParameters.getFragmentDecoration(walker.current());
+		boolean processed = false;
+		if (decoration != null)
+		{
+			processed = handleDecorationSign(decoration);
+		}
+		if (!processed)
+		{
+			appendCurrentAndForward();
+		}
+	}
+
 	/**
 	 * Handles the current decoration sign (character).
 	 *
 	 * @param foundDecoration  the decoration corresponding to this sign
-	 * @return true if the sign has been interpreted as style mark. False if the context makes it to be kept literally.
+	 * @return true if the sign has been interpreted as style mark. false if the context makes it to be kept literally.
 	 */
 	private boolean handleDecorationSign(FragmentDecoration foundDecoration)
 	{
@@ -129,34 +142,12 @@ public class FragmentParser
 		if (currentDecoratedFragment == null)
 		{
 			// Not in a decoration so far
-
-			// We already captured some text, add it as text fragment
-			addOutputToLine();
-			// Start a new decoration
-			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
-			line.add(fragment);
-			stack.push(fragment);
+			handleNewDecoration(foundDecoration);
 		}
 		else // Inside a decoration
 		{
-			if (currentDecoratedFragment.getDecoration() == foundDecoration)
-			{
-				// End of the decorated part
-				stack.pop();
-				addOutputStringTo(currentDecoratedFragment);
-			}
-			else if (isInStack(foundDecoration))
-			{
-				// Ignore this one, redundant, keep it as regular character
-				return false;
-			}
-			else // We start a new, different decoration
-			{
-				addOutputStringTo(currentDecoratedFragment);
-				DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
-				currentDecoratedFragment.add(fragment);
-				stack.push(fragment);
-			}
+			if (!handleNestedDecoration(foundDecoration, currentDecoratedFragment))
+				return false; // To treat as a regular char
 		}
 		walker.forward(); // Skip this processed decoration character
 		return true;
@@ -171,8 +162,7 @@ public class FragmentParser
 	 * @param currentDecoratedFragment  the context where the sign is found
 	 * @return true if it is OK, false if it is a plain character
 	 */
-	private boolean isCurrentAMarkupSign(
-			FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
+	private boolean isCurrentAMarkupSign(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
 	{
 		// We know current is a markup sign, but context can tell otherwise
 		char previous = walker.previous();
@@ -199,24 +189,67 @@ public class FragmentParser
 		return true;
 	}
 
+	private void handleNewDecoration(FragmentDecoration foundDecoration)
+	{
+		// We already captured some text, add it as text fragment
+		addOutputToCurrentFragment();
+		// Start a new decoration
+		DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
+		stack.push(fragment);
+	}
+
 	/**
-	 * Adds the current content of outputString to the line.<br>
-	 * Directly or to the current decorated fragment if we are inside one.
+	 * @return true if the decoration has been handled as such, false if it is treated as a regular character
 	 */
-	private void addOutputToLine()
+	private boolean handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
+	{
+		if (currentDecoratedFragment.getDecoration() == foundDecoration)
+		{
+			// End of the decorated part
+			addOutputStringTo(currentDecoratedFragment);
+
+			if (stack.size() == 1) // Last stacked
+			{
+				line.add(stack.pop());
+			}
+			else
+			{
+				DecoratedFragment fragment = stack.pop();
+				stack.peek().add(fragment);
+			}
+		}
+		else if (isInStack(foundDecoration))
+		{
+			// Ignore this one, redundant, keep it as regular character
+			return false;
+		}
+		else // We start a new, different decoration
+		{
+			addOutputStringTo(currentDecoratedFragment);
+
+			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
+			stack.push(fragment);
+		}
+		return true;
+	}
+
+	/**
+	 * Adds the current content of outputString to the current fragment.
+	 */
+	private void addOutputToCurrentFragment()
 	{
 		if (outputString.length() > 0)
 		{
-			addFragmentToLine(new TextFragment(outputString.toString()));
+			addFragment(new TextFragment(outputString.toString()));
 			outputString.setLength(0); // Clear
 		}
 	}
 
 	/**
-	 * Adds the given fragment to the line.<br>
-	 * Directly or to the current decorated fragment if we are inside one.
+	 * Adds the given fragment directly to the line if stack is empty,
+	 * or to the current decorated fragment if we are inside one.
 	 */
-	private void addFragmentToLine(Fragment fragment)
+	private void addFragment(Fragment fragment)
 	{
 		DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
 		if (currentDecoratedFragment == null)
@@ -268,7 +301,7 @@ public class FragmentParser
 			outputString.append(urlPrefix);
 			return;
 		}
-		addOutputToLine();
+		addOutputToCurrentFragment();
 		char[] validURLChars = parsingParameters.getValidURLChars();
 		while (walker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
 		{
@@ -276,7 +309,7 @@ public class FragmentParser
 			walker.forward();
 		}
 		LinkFragment lf = makeLinkFragmentFromURL(urlPrefix, outputString.toString());
-		addFragmentToLine(lf);
+		addFragment(lf);
 		outputString.setLength(0);
 	}
 
@@ -290,5 +323,37 @@ public class FragmentParser
 		}
 		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
 		return lf;
+	}
+
+	/**
+	 * If we have things remaining in the stack, these are unterminated fragments, we just dump them out literally (ie. fragment signs were inactive).
+	 */
+	private void popStack()
+	{
+		addOutputToCurrentFragment();
+		RestoreFragmentVisitor fragmentRestore = new RestoreFragmentVisitor();
+		while (stack.size() > 0)
+		{
+			DecoratedFragment fragment = stack.pollLast();
+			fragment.getDecoration().accept(fragmentRestore, outputString);
+			for (Fragment subFragment : fragment.getFragments())
+			{
+				if (subFragment instanceof LinkFragment || subFragment instanceof DecoratedFragment)
+				{
+					line.add(outputString.toString());
+					outputString.setLength(0);
+					line.add(subFragment);
+				}
+				else if (subFragment instanceof TextFragment)
+				{
+					outputString.append(((TextFragment) subFragment).getText());
+				}
+				else
+					throw new IllegalStateException("A new class must be handled here");
+			}
+
+			line.add(outputString.toString());
+			outputString.setLength(0);
+		}
 	}
 }

@@ -45,7 +45,7 @@ public class BlockParser
 		{
 			if (walker.match(parsingParameters.getCodeBlockSign()))
 			{
-				manageCodeBlockSign();
+				handleCodeBlockSign();
 				continue;
 			}
 			if (inCodeBlock)
@@ -57,11 +57,11 @@ public class BlockParser
 			walker.skipSpaces();
 			if (walker.atLineEnd())
 			{
-				manageEmptyLine();
+				handleEmptyLine();
 			}
 			else
 			{
-				manageLine();
+				handleLine();
 			}
 		}
 		popStack();
@@ -69,10 +69,7 @@ public class BlockParser
 		return document;
 	}
 
-	/**
-	 *
-	 */
-	private void manageCodeBlockSign()
+	private void handleCodeBlockSign()
 	{
 		inCodeBlock = !inCodeBlock;
 		if (inCodeBlock)
@@ -87,7 +84,7 @@ public class BlockParser
 		walker.goToNextLine();
 	}
 
-	private void manageEmptyLine()
+	private void handleEmptyLine()
 	{
 		TypedBlock block = stack.peek();
 		if (block != null)
@@ -99,7 +96,7 @@ public class BlockParser
 		walker.forward();
 	}
 
-	private void manageLine()
+	private void handleLine()
 	{
 		BlockType blockType = checkBlockSignWithEscape();
 		Line line = FragmentParser.parse(walker, parsingParameters);

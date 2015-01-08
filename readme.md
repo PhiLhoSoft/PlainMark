@@ -21,7 +21,7 @@ The markup uses Ascii characters in a given context to apply a special style (eg
 These special characters can loose their meaning in some context, and can always be escaped with the tilde `~` sign preceding them.<br>
 If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.
 
-Block markup characters are defined at the start of a line, regardless of initial spaces.<br>
+Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped. In the future (an extension?), they might be used for nesting blocks.
 Fragment markup characters loose their meaning if surrounded by spaces or by letters or digits.<br>
 A fragment of text stops at the end of the line: authors rarely want to have several paragraphs of bold text, and thus a missing ending char doesn't spread over the whole remainder of the text.
 

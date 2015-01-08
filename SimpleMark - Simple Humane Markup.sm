@@ -1,21 +1,19 @@
 # SimpleMark: a Simple Humane Markup
 
 The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
-
-SimpleMark is a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
 It aims more at writing short comments than writing big, complex documents. For the latter, something like [CommonMark](http://commonmark.org/) is better suited.
 
 Newline characters do a line break in the rendering, equivalent to the `br` HTML tag.
-Two consecutive newlines (an empty line) create a new paragraph, the `p` tag in HTML.
+Two consecutive newlines (an empty line) create a new paragraph, like the `p` tag in HTML.
 
 The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).
 These special characters can loose their meaning in some context, and can always be escaped with the tilde `~~` sign preceding them.
 If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.
 
-Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped. In the future (extension?), they might be used for nesting blocks.
+Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped.
 
 Fragment markup characters loose their meaning if surrounded by spaces or by letters or digits.
-A fragment of text stops at the end of the line: authors rarely want to have several paragraphs of bold text, and thus a missing ending char doesn't spread over the whole remainder of the text.
+They go by pairs, correctly nested. A single markup sign (without a closing one before the end of the line) looses its meaning (is kept literal).
 
 ### Limitations
 
@@ -86,9 +84,10 @@ An empty line (or several consecutive ones) separates paragraphs, rendered in HT
 
 ## Lists
 
-Unordered lists are made with at least two consecutive lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space.
-Ordered lists  are made with at least two consecutive lines starting with a number (sequence of digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
+Unordered lists are made with lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space.
+Ordered lists  are made with lines starting with a number (sequence of digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
 No nesting is handled. A list stops with an empty line, so there can be two distinct consecutive lists.
+The list sign of unordered lists isn't relevant, they render to the same kind of item.
 
 ~* Item
 ~* Other item
@@ -114,6 +113,14 @@ becomes:
 + Other item
 + Last item
 
+~* Item
+~+ Other item
+~- Last item
+becomes:
+* Item
++ Other item
+- Last item
+
 ~1. Item 1
 ~1. Item 2
 ~10. Item n
@@ -130,7 +137,7 @@ Between these marks, all lines are rendered literally, no markup interpretation 
 The code block signs *must* start on the first column.
 
 
-# Parsing rules
+# Parsing rules / implementation
 
 The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.
 

@@ -20,7 +20,7 @@ public class TestPlainTextVisitor
 
 //		System.out.println(ctx.toString());
 		assertThat(ctx.asString()).isEqualTo("Start of text with emphasis inside.\n" +
-				"Strong init, followed by plain text and a nice link - http://www.example.com\n" +
+				"Strong init, followed by plain text and a nice link - http://www.example.com/?a=b&c=~x~\n" +
 				"Boring plain text and emphasized text and even deleted text fixed width text.\n");
 	}
 
@@ -58,9 +58,9 @@ public class TestPlainTextVisitor
 		assertThat(ctx.asString()).isEqualTo(
 				"This is a title\n" +
 				"Start of text with emphasis inside.\n" +
-				"Item 0 & Strong fragment, followed by plain text and a nice link (0) - http://www.example.com/0\n" +
-				"Item 1 & Strong fragment, followed by plain text and a nice link (1) - http://www.example.com/1\n" +
-				"Item 2 & Strong fragment, followed by plain text and a nice link (2) - http://www.example.com/2\n" +
+				"Item 0 & Strong fragment, followed by plain text and a nice link (0) - http://www.example.com/#anchor0\n" +
+				"Item 1 & Strong fragment, followed by plain text and a nice link (1) - http://www.example.com/#anchor1\n" +
+				"Item 2 & Strong fragment, followed by plain text and a nice link (2) - http://www.example.com/#anchor2\n" +
 				"Block of code\n" +
 				"on several lines\n" +
 				"Boring plain text and emphasized text and even deleted text fixed width text.\n");

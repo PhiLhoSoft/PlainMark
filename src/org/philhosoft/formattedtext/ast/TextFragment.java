@@ -41,6 +41,6 @@ public class TextFragment implements Fragment
 	@Override
 	public String toString()
 	{
-		return "TextFragment[" + text + "]";
+		return "TextFragment{" + text + "}";
 	}
 }

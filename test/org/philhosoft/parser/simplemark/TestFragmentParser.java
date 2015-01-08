@@ -114,7 +114,7 @@ public class TestFragmentParser
 	@Test
 	public void testSingleDecoration_escaping()
 	{
-		StringWalker walker = new StringWalker("This is not ~*strong~*");
+		StringWalker walker = new StringWalker("This is not ~*strong*");
 
 		Line expected = new Line("This is not *strong*");
 
@@ -144,11 +144,10 @@ public class TestFragmentParser
 	@Test
 	public void testSingleDecoration_escapingAtEnd()
 	{
-		StringWalker walker = new StringWalker("This is *strong~* and still~");
+		StringWalker walker = new StringWalker("This is *not strong~* and still~");
 
 		Line expected = new Line("This is ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "strong* and still~");
-		expected.add(df);
+		expected.add("*not strong* and still~");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -253,16 +252,15 @@ public class TestFragmentParser
 	}
 
 
-	//## Cases where users forgot to close their markup. We stop at line end.
+	//## Cases where users forgot to close their markup. We disable the single sign.
 
 	@Test
 	public void testSingleDecoration_unterminated()
 	{
-		StringWalker walker = new StringWalker("A text `fixed width");
+		StringWalker walker = new StringWalker("A text without `fixed width");
 
-		Line expected = new Line("A text ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE, "fixed width");
-		expected.add(df);
+		Line expected = new Line("A text without ");
+		expected.add("`fixed width");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -270,11 +268,10 @@ public class TestFragmentParser
 	@Test
 	public void testSingleDecoration_unterminated_bug()
 	{
-		StringWalker walker = new StringWalker("A text `fixed width ");
+		StringWalker walker = new StringWalker("A text without `fixed width ");
 
-		Line expected = new Line("A text ");
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.CODE, "fixed width ");
-		expected.add(df);
+		Line expected = new Line("A text without ");
+		expected.add("`fixed width ");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -282,11 +279,9 @@ public class TestFragmentParser
 	@Test
 	public void testSingleDecoration_unterminatedFromStart()
 	{
-		StringWalker walker = new StringWalker("*Strong text");
+		StringWalker walker = new StringWalker("*Almost strong text");
 
-		Line expected = new Line();
-		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "Strong text");
-		expected.add(df);
+		Line expected = new Line("*Almost strong text");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -294,13 +289,39 @@ public class TestFragmentParser
 	@Test
 	public void testNestedDecorations_codeDeleted_unterminated()
 	{
-		StringWalker walker = new StringWalker("This is `code style and -deleted");
+		StringWalker walker = new StringWalker("This could be `code style and -deleted");
 
-		Line expected = new Line("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.CODE, "code style and ");
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.DELETE, "deleted");
-		dfs.add(dfe);
-		expected.add(dfs);
+		Line expected = new Line("This could be ");
+		expected.add("`code style and ");
+		expected.add("-deleted");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_code_unterminatedAndDeleted()
+	{
+		StringWalker walker = new StringWalker("This could be `code style and -deleted- text");
+
+		Line expected = new Line("This could be ");
+		expected.add("`code style and ");
+		DecoratedFragment dfd = new DecoratedFragment(FragmentDecoration.DELETE, "deleted");
+		expected.add(dfd);
+		expected.add(" text");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_codeDeleted_unterminatedWithURL()
+	{
+		StringWalker walker = new StringWalker("This could be -deleted http://foo.bar URL");
+
+		Line expected = new Line("This could be ");
+		expected.add("-deleted ");
+		LinkFragment lf = new LinkFragment("foo.bar", "http://foo.bar");
+		expected.add(lf);
+		expected.add(" URL");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -311,14 +332,13 @@ public class TestFragmentParser
 	@Test
 	public void testNestedDecorations_badNestingTwo()
 	{
-		StringWalker walker = new StringWalker("This is *_strong emphasized*_ text.");
+		StringWalker walker = new StringWalker("This could have been *_strong emphasized*_ text.");
 
-		Line expected = new Line("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
+		Line expected = new Line("This could have been ");
+		expected.add("*");
 		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong emphasized*"); // Strong inside strong (at higher level) is ignored
-		dfs.add(dfe);
-		dfs.add(" text.");
-		expected.add(dfs);
+		expected.add(dfe);
+		expected.add(" text.");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -326,16 +346,14 @@ public class TestFragmentParser
 	@Test
 	public void testNestedDecorations_badNestingThree()
 	{
-		StringWalker walker = new StringWalker("This is *_strong `emphasized*_ text`.");
+		StringWalker walker = new StringWalker("This could have been *_strong `emphasized*_ text`.");
 
-		Line expected = new Line("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG);
-		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong "); // Strong inside strong is ignored
-		dfs.add(dfe);
+		Line expected = new Line("This could have been ");
+		expected.add("*");
+		expected.add("_strong "); // Strong inside strong is ignored
 		DecoratedFragment dfc = new DecoratedFragment(FragmentDecoration.CODE, "emphasized*_ text"); // Decoration inside same decoration (at higher level) is ignored
-		dfe.add(dfc);
-		dfe.add(".");
-		expected.add(dfs);
+		expected.add(dfc);
+		expected.add(".");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -389,8 +407,7 @@ public class TestFragmentParser
 		StringWalker walker = new StringWalker("This is *strong not*ending at all");
 
 		Line expected = new Line("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong not*ending at all");
-		expected.add(dfs);
+		expected.add("*strong not*ending at all");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -401,8 +418,7 @@ public class TestFragmentParser
 		StringWalker walker = new StringWalker("This is *strong not * ending at all");
 
 		Line expected = new Line("This is ");
-		DecoratedFragment dfs = new DecoratedFragment(FragmentDecoration.STRONG, "strong not * ending at all");
-		expected.add(dfs);
+		expected.add("*strong not * ending at all");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}

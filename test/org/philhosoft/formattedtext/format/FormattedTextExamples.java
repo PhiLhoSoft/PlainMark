@@ -21,7 +21,8 @@ public class FormattedTextExamples
 		// Build the AST the way it will be by the (scannerless) parser
 
 		// First line
-		Line firstLine = new Line("Start of text with ");
+		Line firstLine = new Line("Start of text");
+		firstLine.add(" with "); // Check if two consecutive text fragments are merged seamlessly
 		firstLine.add(new DecoratedFragment(FragmentDecoration.EMPHASIS, "emphasis inside"));
 		firstLine.add(new TextFragment("."));
 
