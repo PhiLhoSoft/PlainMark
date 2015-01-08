@@ -146,8 +146,7 @@ public class FragmentParser
 		}
 		else // Inside a decoration
 		{
-			if (!handleNestedDecoration(foundDecoration, currentDecoratedFragment))
-				return false; // To treat as a regular char
+			handleNestedDecoration(foundDecoration, currentDecoratedFragment);
 		}
 		walker.forward(); // Skip this processed decoration character
 		return true;
@@ -198,10 +197,7 @@ public class FragmentParser
 		stack.push(fragment);
 	}
 
-	/**
-	 * @return true if the decoration has been handled as such, false if it is treated as a regular character
-	 */
-	private boolean handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
+	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
 	{
 		if (currentDecoratedFragment.getDecoration() == foundDecoration)
 		{
@@ -218,11 +214,6 @@ public class FragmentParser
 				stack.peek().add(fragment);
 			}
 		}
-		else if (isInStack(foundDecoration))
-		{
-			// Ignore this one, redundant, keep it as regular character
-			return false;
-		}
 		else // We start a new, different decoration
 		{
 			addOutputStringTo(currentDecoratedFragment);
@@ -230,7 +221,6 @@ public class FragmentParser
 			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
 			stack.push(fragment);
 		}
-		return true;
 	}
 
 	/**
@@ -270,16 +260,6 @@ public class FragmentParser
 			currentDecoratedFragment.add(outputString.toString());
 			outputString.setLength(0); // Clear
 		}
-	}
-
-	private boolean isInStack(FragmentDecoration decoration)
-	{
-		for (DecoratedFragment decoratedFragment : stack)
-		{
-			if (decoratedFragment.getDecoration() == decoration)
-				return true;
-		}
-		return false;
 	}
 
 	private String findURLPrefix()

@@ -428,6 +428,23 @@ public class TestBlockParser
 		assertThat(result).isEqualTo(expected);
 	}
 
+	@Ignore // TODO
+	@Test
+	public void testListStar_single()
+	{
+		StringWalker walker = new StringWalker("* A mono-entry line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listEntry = new TypedBlock(BlockType.LIST_ITEM);
+		listEntry.add("A mono-entry line");
+		list.add(listEntry);
+		expected.add(list);
+		assertThat(result).isEqualTo(expected);
+	}
+
 	private TypedBlock createParagraph(String... texts)
 	{
 		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH);

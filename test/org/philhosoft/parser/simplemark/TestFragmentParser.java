@@ -313,7 +313,64 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testNestedDecorations_codeDeleted_unterminatedWithURL()
+	public void testNestedDecorations_codeStrongEmphasis_unterminatedAndDeletedWithURL()
+	{
+		StringWalker walker = new StringWalker("This is not `code *style _and -deleted http://foo.bar URL- text");
+
+		Line expected = new Line("This is not ");
+		expected.add("`code ");
+		expected.add("*style ");
+		expected.add("_and ");
+		DecoratedFragment dfd = new DecoratedFragment(FragmentDecoration.DELETE, "deleted ");
+		LinkFragment lf = new LinkFragment("foo.bar", "http://foo.bar");
+		dfd.add(lf);
+		dfd.add(" URL");
+		expected.add(dfd);
+		expected.add(" text");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_codeStrong_unterminatedAndDeletedEmphasisWithURL()
+	{
+		StringWalker walker = new StringWalker("This is not `code *style and -deleted http://foo.bar _URL_- text");
+
+		Line expected = new Line("This is not ");
+		expected.add("`code ");
+		expected.add("*style and ");
+		DecoratedFragment dfd = new DecoratedFragment(FragmentDecoration.DELETE, "deleted ");
+		LinkFragment lf = new LinkFragment("foo.bar", "http://foo.bar");
+		dfd.add(lf);
+		dfd.add(" ");
+		dfd.add(new DecoratedFragment(FragmentDecoration.EMPHASIS, "URL"));
+		expected.add(dfd);
+		expected.add(" text");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_codeStrong_unterminatedAndDeletedStrongWithURL()
+	{
+		StringWalker walker = new StringWalker("This is not `code *style and -deleted http://foo.bar *URL*- text");
+
+		Line expected = new Line("This is not ");
+		expected.add("`code ");
+		expected.add("*style and ");
+		DecoratedFragment dfd = new DecoratedFragment(FragmentDecoration.DELETE, "deleted ");
+		LinkFragment lf = new LinkFragment("foo.bar", "http://foo.bar");
+		dfd.add(lf);
+		dfd.add(" ");
+		dfd.add(new DecoratedFragment(FragmentDecoration.STRONG, "URL"));
+		expected.add(dfd);
+		expected.add(" text");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testNestedDecorations_deleted_unterminatedWithURL()
 	{
 		StringWalker walker = new StringWalker("This could be -deleted http://foo.bar URL");
 
