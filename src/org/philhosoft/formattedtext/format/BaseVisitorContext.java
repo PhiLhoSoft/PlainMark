@@ -47,7 +47,8 @@ public abstract class BaseVisitorContext implements VisitorContext
 			return "[parentBlock=" + type +  ", first=" + first + ", last=" + last + "]";
 		}
 	}
-	Deque<FirstLast> firstLastList = new ArrayDeque<FirstLast>();
+
+	protected Deque<FirstLast> firstLastList = new ArrayDeque<FirstLast>();
 
 	@Override
 	public void push(Block parentBlock, boolean first, boolean last)
@@ -60,7 +61,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 	{
 		if (firstLastList.size() > 0)
 		{
-			firstLastList.peek().setFirstLast(first, last);;
+			firstLastList.peek().setFirstLast(first, last);
 		}
 	}
 

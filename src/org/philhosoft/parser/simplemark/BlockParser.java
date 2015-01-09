@@ -115,9 +115,17 @@ public class BlockParser
 			else
 			{
 				popPreviousBlockIfNeeded(blockType);
+				addListIfNeeded(blockType);
 				TypedBlock block = new TypedBlock(blockType);
 				block.add(line);
-				stack.push(block);
+				if (block.getType() == BlockType.LIST_ITEM)
+				{
+					stack.peek().add(block);
+				}
+				else
+				{
+					stack.push(block);
+				}
 			}
 		}
 	}
@@ -177,6 +185,35 @@ public class BlockParser
 			// We don't accept other blocks in paragraphs
 			document.add(stack.pop());
 		}
+	}
+
+	private void addListIfNeeded(BlockType blockType)
+	{
+		if (blockType == BlockType.LIST_ITEM)
+		{
+			TypedBlock ul = findInStack(BlockType.UNORDERED_LIST);
+			if (ul == null)
+			{
+				TypedBlock ol = findInStack(BlockType.ORDERED_LIST);
+				if (ol == null)
+				{
+
+				}
+			}
+//			if ( ||)
+//				return; // Already in a list
+			stack.push(new TypedBlock(BlockType.UNORDERED_LIST));
+		}
+	}
+
+	private TypedBlock findInStack(BlockType blockType)
+	{
+		for (TypedBlock block : stack)
+		{
+			if (block.getType() == blockType)
+				return block;
+		}
+		return null;
 	}
 
 	private BlockType getPreviousType()

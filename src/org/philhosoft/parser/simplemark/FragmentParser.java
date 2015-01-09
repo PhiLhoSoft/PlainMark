@@ -199,11 +199,11 @@ public class FragmentParser
 
 	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
 	{
+		addOutputStringTo(currentDecoratedFragment);
+
 		if (currentDecoratedFragment.getDecoration() == foundDecoration)
 		{
 			// End of the decorated part
-			addOutputStringTo(currentDecoratedFragment);
-
 			if (stack.size() == 1) // Last stacked
 			{
 				line.add(stack.pop());
@@ -216,8 +216,6 @@ public class FragmentParser
 		}
 		else // We start a new, different decoration
 		{
-			addOutputStringTo(currentDecoratedFragment);
-
 			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
 			stack.push(fragment);
 		}

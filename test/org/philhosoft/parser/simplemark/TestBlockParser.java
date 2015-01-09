@@ -402,7 +402,6 @@ public class TestBlockParser
 		assertThat(result).isEqualTo(expected);
 	}
 
-	@Ignore // TODO
 	@Test
 	public void testCodeBlock_escaped()
 	{
@@ -418,11 +417,19 @@ public class TestBlockParser
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock p1 = new TypedBlock(BlockType.PARAGRAPH);
 		Line l1 = new Line("Plain text before");
-		DecoratedFragment df1 = new DecoratedFragment(FragmentDecoration.CODE, "`");
-		l1.add(df1);
 		p1.add(l1);
-//		Line l2 = new Line();
-		TypedBlock p2 = createParagraph("`", "And plain text after");
+		Line l2 = new Line("`");
+		DecoratedFragment df1 = new DecoratedFragment(FragmentDecoration.CODE);
+		l2.add(df1);
+		p1.add(l2);
+		Line l3 = new Line("// Comment ");
+		DecoratedFragment df2 = new DecoratedFragment(FragmentDecoration.STRONG, "line");
+		l3.add(df2);
+		p1.add(l3);
+		TypedBlock p2 = new TypedBlock(BlockType.PARAGRAPH);
+		p2.add(l2);
+		Line l4 = new Line("And plain text after");
+		p2.add(l4);
 		expected.add(p1);
 		expected.add(p2);
 		assertThat(result).isEqualTo(expected);
