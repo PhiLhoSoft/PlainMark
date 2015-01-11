@@ -43,9 +43,9 @@ public class ParsingParameters
 		blockTypesPerSign.put("# ", BlockType.TITLE1);
 		blockTypesPerSign.put("## ", BlockType.TITLE2);
 		blockTypesPerSign.put("### ", BlockType.TITLE3);
-		blockTypesPerSign.put("* ", BlockType.LIST_ITEM);
-		blockTypesPerSign.put("- ", BlockType.LIST_ITEM);
-		blockTypesPerSign.put("+ ", BlockType.LIST_ITEM);
+		blockTypesPerSign.put("* ", BlockType.LIST_ITEM_BULLET);
+		blockTypesPerSign.put("- ", BlockType.LIST_ITEM_BULLET);
+		blockTypesPerSign.put("+ ", BlockType.LIST_ITEM_BULLET);
 	}
 	private String codeBlockSign = "```";
 

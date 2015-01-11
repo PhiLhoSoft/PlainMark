@@ -116,7 +116,7 @@ public class BlockParser
 				addListIfNeeded(blockType);
 				TypedBlock block = new TypedBlock(blockType);
 				block.add(line);
-				if (block.getType() == BlockType.LIST_ITEM)
+				if (blockType == BlockType.LIST_ITEM_BULLET || blockType == BlockType.LIST_ITEM_NUMBER)
 				{
 					stack.peek().add(block);
 				}
@@ -183,24 +183,48 @@ public class BlockParser
 			// We don't accept other blocks in paragraphs
 			document.add(stack.pop());
 		}
+		else if ((previousType == BlockType.UNORDERED_LIST || previousType == BlockType.ORDERED_LIST) &&
+				(blockType != BlockType.LIST_ITEM_BULLET && blockType != BlockType.LIST_ITEM_NUMBER))
+		{
+			// Currently, we don't put blocks in list items
+			document.add(stack.pop());
+		}
 	}
 
 	private void addListIfNeeded(BlockType blockType)
 	{
-		if (blockType == BlockType.LIST_ITEM)
+		if (blockType == BlockType.LIST_ITEM_BULLET)
 		{
-			TypedBlock ul = findInStack(BlockType.UNORDERED_LIST);
-			if (ul == null)
-			{
-				TypedBlock ol = findInStack(BlockType.ORDERED_LIST);
-				if (ol == null)
-				{
+			addUnorderedListIfNeeded();
+		}
+		else if (blockType == BlockType.LIST_ITEM_NUMBER)
+		{
+			addOrderedListIfNeeded();
+		}
+	}
 
-				}
-			}
-//			if ( ||)
-//				return; // Already in a list
+	private void addUnorderedListIfNeeded()
+	{
+		TypedBlock ul = findInStack(BlockType.UNORDERED_LIST);
+		if (ul == null)
+		{
 			stack.push(new TypedBlock(BlockType.UNORDERED_LIST));
+		}
+		else
+		{
+//				return; // Already in a list
+		}
+	}
+	private void addOrderedListIfNeeded()
+	{
+		TypedBlock ol = findInStack(BlockType.ORDERED_LIST);
+		if (ol == null)
+		{
+			stack.push(new TypedBlock(BlockType.ORDERED_LIST));
+		}
+		else
+		{
+//				return; // Already in a list
 		}
 	}
 

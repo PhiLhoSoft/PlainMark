@@ -66,12 +66,20 @@ public enum BlockType
 			visitor.visitOrderedList(output);
 		}
 	},
-	LIST_ITEM
+	LIST_ITEM_BULLET
 	{
 		@Override
 		public <T> void accept(Visitor<T> visitor, T output)
 		{
-			visitor.visitListItem(output);
+			visitor.visitListItemBullet(output);
+		}
+	},
+	LIST_ITEM_NUMBER
+	{
+		@Override
+		public <T> void accept(Visitor<T> visitor, T output)
+		{
+			visitor.visitListItemNumber(output);
 		}
 	};
 
@@ -85,7 +93,8 @@ public enum BlockType
 		void visitCode(T output);
 		void visitUnorderedList(T output);
 		void visitOrderedList(T output);
-		void visitListItem(T output);
+		void visitListItemBullet(T output);
+		void visitListItemNumber(T output);
 	}
 
 	public abstract <T> void accept(Visitor<T> visitor, T output);

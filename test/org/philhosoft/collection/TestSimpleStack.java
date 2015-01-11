@@ -112,6 +112,7 @@ public class TestSimpleStack
 		assertThat(stack).isNotEmpty();
 		assertThat(stack.size()).isEqualTo(3);
 		assertThat(stack.peek()).isEqualTo("Doh D");
+		assertThat(stack.peekLast()).isEqualTo("Bar B");
 
 		String polled = stack.pollLast();
 

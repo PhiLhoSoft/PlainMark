@@ -77,7 +77,7 @@ public class FormattedTextExamples
 		document.add(list);
 		for (int i = 0; i < 3; i++)
 		{
-			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM);
+			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM_BULLET);
 			item.add(new Line("Item <" + i + ">"));
 			list.add(item);
 		}
@@ -127,7 +127,7 @@ public class FormattedTextExamples
 		document.add(list);
 		for (int i = 0; i < 3; i++)
 		{
-			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM);
+			TypedBlock item = new TypedBlock(BlockType.LIST_ITEM_BULLET);
 			Line line = new Line("Item " + i + " & ");
 			line.add(new DecoratedFragment(FragmentDecoration.STRONG, "Strong fragment, followed by"));
 			line.add(new TextFragment(" plain text and "));

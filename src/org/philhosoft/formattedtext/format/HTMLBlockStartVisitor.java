@@ -40,7 +40,12 @@ public class HTMLBlockStartVisitor implements BlockType.Visitor<VisitorContext>
 		context.append("<ol>\n");
 	}
 	@Override
-	public void visitListItem(VisitorContext context)
+	public void visitListItemBullet(VisitorContext context)
+	{
+		context.append("<li>");
+	}
+	@Override
+	public void visitListItemNumber(VisitorContext context)
 	{
 		context.append("<li>");
 	}

@@ -2,7 +2,6 @@ package org.philhosoft.parser.simplemark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.philhosoft.formattedtext.ast.Block;
@@ -435,7 +434,6 @@ public class TestBlockParser
 		assertThat(result).isEqualTo(expected);
 	}
 
-	@Ignore // TODO
 	@Test
 	public void testListStar_single()
 	{
@@ -445,10 +443,76 @@ public class TestBlockParser
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
-		TypedBlock listEntry = new TypedBlock(BlockType.LIST_ITEM);
-		listEntry.add("A mono-entry line");
-		list.add(listEntry);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A mono-entry line");
+		list.add(listItem1);
 		expected.add(list);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testListStar_multiple()
+	{
+		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\n* Last");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A mono-entry line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list.add(listItem2);
+		TypedBlock listItem3 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem3.add("Last");
+		list.add(listItem3);
+		expected.add(list);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testListStar_multipleAndParagraph()
+	{
+		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\n\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A mono-entry line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraph = new TypedBlock(BlockType.PARAGRAPH);
+		paragraph.add("Last line");
+		expected.add(paragraph);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testListStar_multipleWithParagraph()
+	{
+		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A mono-entry line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraph = new TypedBlock(BlockType.PARAGRAPH);
+		paragraph.add("Last line");
+		expected.add(paragraph);
 		assertThat(result).isEqualTo(expected);
 	}
 
