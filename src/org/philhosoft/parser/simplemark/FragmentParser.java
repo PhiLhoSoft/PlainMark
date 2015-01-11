@@ -1,8 +1,6 @@
 package org.philhosoft.parser.simplemark;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
+import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.Fragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
@@ -22,7 +20,7 @@ public class FragmentParser
 	private StringWalker walker;
 	private ParsingParameters parsingParameters;
 	private Line line = new Line();
-	private Deque<DecoratedFragment> stack = new ArrayDeque<DecoratedFragment>();
+	private SimpleStack<DecoratedFragment> stack = new SimpleStack<DecoratedFragment>();
 	private StringBuilder outputString = new StringBuilder();
 
 	private FragmentParser(StringWalker walker, ParsingParameters parsingParameters)
@@ -174,7 +172,7 @@ public class FragmentParser
 				// Deactivated if previous char is a letter or a digit
 				(Character.isLetterOrDigit(previous) ||
 				// Deactivated if next char is a space
-				Character.isWhitespace(next)))
+				StringWalker.isWhitespace(next)))
 			return false;
 
 		// Is this an ending sign?
@@ -182,7 +180,7 @@ public class FragmentParser
 				// Deactivated if next char is a letter or a digit
 				(Character.isLetterOrDigit(next) ||
 				// Deactivated if previous char is a space
-				Character.isWhitespace(previous)))
+				StringWalker.isWhitespace(previous)))
 			return false;
 
 		return true;
@@ -273,7 +271,7 @@ public class FragmentParser
 	private void handleURL(String urlPrefix)
 	{
 		walker.forward(urlPrefix.length());
-		if (!walker.isAlphaNumerical(walker.current()))
+		if (!StringWalker.isAlphaNumerical(walker.current()))
 		{
 			// Probably just mentioning a raw schema
 			outputString.append(urlPrefix);
@@ -281,7 +279,7 @@ public class FragmentParser
 		}
 		addOutputToCurrentFragment();
 		char[] validURLChars = parsingParameters.getValidURLChars();
-		while (walker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
+		while (StringWalker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
 		{
 			outputString.append(walker.current());
 			walker.forward();
@@ -304,7 +302,8 @@ public class FragmentParser
 	}
 
 	/**
-	 * If we have things remaining in the stack, these are unterminated fragments, we just dump them out literally (ie. fragment signs were inactive).
+	 * If we have things remaining in the stack, these are unterminated fragments, we just dump them out literally
+	 * (ie. fragment signs were inactive).
 	 */
 	private void popStack()
 	{

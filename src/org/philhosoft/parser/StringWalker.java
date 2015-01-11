@@ -80,7 +80,7 @@ public class StringWalker
 	public int skipSpaces()
 	{
 		int counter = 0;
-		while (current == ' ' || current == '\t')
+		while (isWhitespace(current))
 		{
 			forward();
 			counter++;
@@ -200,12 +200,12 @@ public class StringWalker
 	}
 
 	/** More restrictive than Character.isLetterOrDigit(). */
-	public boolean isAlphaNumerical(char c)
+	public static boolean isAlphaNumerical(char c)
 	{
 		return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
 	}
 
-	public boolean isLineTerminator(char c)
+	public static boolean isLineTerminator(char c)
 	{
 		/*
 		From Java's Pattern class JavaDoc:
@@ -220,6 +220,14 @@ public class StringWalker
 		A paragraph-separator character ('\u2029).
 		*/
 		return c == '\n' || c == '\r' || c == '\u0085' || c == '\u2028' || c == '\u2029';
+	}
+
+	/**
+	 * Only whitespace, not line terminators.
+	 */
+	public static boolean isWhitespace(char c)
+	{
+		return c == ' ' || c == '\t';
 	}
 
 	private void fetchNextCharacter()

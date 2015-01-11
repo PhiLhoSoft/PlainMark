@@ -1,8 +1,6 @@
 package org.philhosoft.parser.simplemark;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
+import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.Line;
@@ -17,7 +15,7 @@ public class BlockParser
 	private StringWalker walker;
 	private ParsingParameters parsingParameters;
 	private TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
-	private Deque<TypedBlock> stack = new ArrayDeque<TypedBlock>();
+	private SimpleStack<TypedBlock> stack = new SimpleStack<TypedBlock>();
 	private boolean inCodeBlock;
 
 	private BlockParser(StringWalker walker, ParsingParameters parsingParameters)
