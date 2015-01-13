@@ -155,6 +155,24 @@ public class BlockParser
 					return blockSign;
 			}
 		}
+		return checkNumberedListItem(offset);
+	}
+
+	private String checkNumberedListItem(int offset)
+	{
+		if (!StringWalker.isDigit(walker.charAt(offset, '\0')))
+			return null;
+
+		String digits = "0";
+		int dn = 1;
+		while (StringWalker.isDigit(walker.charAt(offset + dn, '\0')))
+		{
+			dn++;
+			digits += "0"; // I don't expect more than 2 or 3 digits...
+		}
+		if (parsingParameters.isOrderedListSuffix(walker.charAt(offset + dn, '\0')) &&
+				StringWalker.isWhitespace(walker.charAt(offset + dn + 1, '\0')))
+			return digits + ".";
 
 		return null;
 	}
@@ -163,8 +181,8 @@ public class BlockParser
 	{
 		if (blockSign == null)
 			return null;
-		BlockType blockType = parsingParameters.getBlockType(blockSign);
-		walker.forward(blockSign.length() + 1);
+		BlockType blockType = blockSign.startsWith("0") ? BlockType.LIST_ITEM_NUMBER : parsingParameters.getBlockType(blockSign);
+		walker.forward(blockSign.length() + 1); // +1 for mandatory whitespace after the sign
 		walker.skipSpaces();
 		return blockType;
 	}

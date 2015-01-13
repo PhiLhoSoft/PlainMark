@@ -223,6 +223,10 @@ public class StringWalker
 	{
 		return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9';
 	}
+	public static boolean isDigit(char c)
+	{
+		return c >= '0' && c <= '9';
+	}
 
 	public static boolean isLineTerminator(char c)
 	{

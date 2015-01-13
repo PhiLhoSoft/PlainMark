@@ -18,6 +18,7 @@ public class ParsingParameters
 	public static final char URL_START_SIGN = '(';
 	public static final char URL_END_SIGN = ')';
 
+	private static final char ORDERED_LIST_SUFFIX = '.';
 	private char escapeSign = '~';
 
 	private String[] urlPrefixes =
@@ -112,5 +113,10 @@ public class ParsingParameters
 	public String getCodeBlockSign()
 	{
 		return codeBlockSign;
+	}
+	public boolean isOrderedListSuffix(char c)
+	{
+		// Currently only one, we might add alternatives
+		return c == ORDERED_LIST_SUFFIX;
 	}
 }

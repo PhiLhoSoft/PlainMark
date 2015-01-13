@@ -89,7 +89,7 @@ Example:
 ## Lists
 
 Unordered lists are made with lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space.
-Ordered lists  are made with lines starting with a number (one or two digits at most) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
+Ordered lists  are made with lines starting with numbers (several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
 No nesting is handled. A list stops with the first non-list line, so there can be two distinct consecutive lists if separated by an empty line.
 The list sign of unordered lists isn't relevant, they render to the same kind of item.
 
@@ -154,20 +154,20 @@ Example:
 ```
 
 
-# Parsing rules / implementation
+# Parsing rules / implementation details
 
 The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.
 
 When an URL is parsed (with another autonomous parser), special chars are ignored, until the end of the URL is detected. Details of the URL parsing is to follow.
 
-Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found. If not followed by such markup sign, tildes are literal.
+Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.
 
 Markup signs are:
 - For fragments: ~ * _ - ` [ ] ( )
 - For blocks (at start of line): # * - + digit (followed by dot) ` (followed by two others)
 
 
-# Manual
+# How to use
 
 Marked text is just plain text where line breaks are preserved, and some characters, in a given context, change the style of the rendered text.
 There are two categories of markup signs: fragment markup and block markup.
@@ -186,17 +186,20 @@ Blocks extends over one or more consecutive lines. They change the style of the 
 Opening signs must have a non-alphanumerical character before and an alphanumerical after them.
 Closing signs must have an alphanumerical character before and a non-alphanumerical after them.
 
+No-nonsense rules
 A formula: x*x-y
-A formula: x * x - y
+Same formula: x * x - y
 A constant: ESCAPE_SIGN
 
 URLs starting with http://, https://, ftp:// or ftps:// are automatically converted to links. Long URLs are shortened with ellipsis.
 
+| http:// stackoverflow.com | http://stackoverflow.com |
 | http:// stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages | http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages |
 
 ### Block markup
 
-These signs are always at the start of a line, regardless of indentation (except for code blocks, they must start on first column). They must always be followed by at least one space.
+These signs are always at the start of a line, regardless of indentation. They must always be followed by at least one space.
+Code blocks are different: they must start on first column and must be alone on their line.
 
 |||
 ~# Title level 1
@@ -270,6 +273,8 @@ Two consecutive line breaks before a non-block line result in a paragraph (`<p>`
 You can deactivate a valid markup sign by preceding it with a tilde `~~` character. If the tilde ~ precedes a non-markup sign, it is kept literal.
 
 Unterminated fragment markup are ignored, rendered literally (exception for code fragment, for technical reasons).
-Nested fragments must terminate in reverse order of their opening:
-This is `*_strong emphasized*_` text. | This is *_strong emphasized*_ text.
+Nested fragments must terminate in reverse order of their opening, otherwise one sign will be deactivated:
+
+| This is `*_strong emphasized*_` text. | This is *_strong emphasized*_ text. |
+
 

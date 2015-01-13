@@ -435,7 +435,7 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_single()
+	public void testUnorderedList_single()
 	{
 		StringWalker walker = new StringWalker("* A mono-entry line");
 
@@ -451,7 +451,7 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_multiple()
+	public void testUnorderedList_multiple()
 	{
 		StringWalker walker = new StringWalker("* A line\n* And another\n* Last");
 
@@ -473,9 +473,9 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_multipleAndParagraph1()
+	public void testUnorderedList_multipleAndParagraph1()
 	{
-		StringWalker walker = new StringWalker("* A line\n* And another\n\nLast line");
+		StringWalker walker = new StringWalker("- A line\n- And another\n\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
@@ -495,9 +495,9 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_multipleAndParagraph2()
+	public void testUnorderedList_multipleAndParagraph2()
 	{
-		StringWalker walker = new StringWalker("* A line\n* And another\nLast line");
+		StringWalker walker = new StringWalker("+ A line\n+ And another\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
@@ -517,9 +517,9 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_paragraphAndList()
+	public void testUnorderedList_paragraphAndList()
 	{
-		StringWalker walker = new StringWalker("This is a list:\n* A line\n* And another\nLast line");
+		StringWalker walker = new StringWalker("This is a list:\n+ A line\n* And another\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
@@ -542,9 +542,9 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_titleAndList()
+	public void testUnorderedList_titleAndList()
 	{
-		StringWalker walker = new StringWalker("## List\n* A line\n* And another\nLast line");
+		StringWalker walker = new StringWalker("## List\n- A line\n+ And another\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
@@ -560,6 +560,110 @@ public class TestBlockParser
 		listItem2.add("And another");
 		list.add(listItem2);
 		expected.add(list);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testUnorderedList1()
+	{
+		StringWalker walker = new StringWalker("This is a list:\n1. A line\n2. And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock paragraphStart = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphStart.add("This is a list:");
+		expected.add(paragraphStart);
+		TypedBlock list = new TypedBlock(BlockType.ORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem1.add("A line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testUnorderedList2()
+	{
+		StringWalker walker = new StringWalker("This is a list:\n10. A line\n20. And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock paragraphStart = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphStart.add("This is a list:");
+		expected.add(paragraphStart);
+		TypedBlock list = new TypedBlock(BlockType.ORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem1.add("A line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testOrderedAndUnorderedList()
+	{
+		StringWalker walker = new StringWalker("This is a list:\n100. A line\n- And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock paragraphStart = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphStart.add("This is a list:");
+		expected.add(paragraphStart);
+		TypedBlock list1 = new TypedBlock(BlockType.ORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem1.add("A line");
+		list1.add(listItem1);
+		TypedBlock list2 = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list2.add(listItem2);
+		expected.add(list1);
+		expected.add(list2);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testUnorderedAndOrderedList()
+	{
+		StringWalker walker = new StringWalker("This is a list:\n- A line\n100. And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock paragraphStart = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphStart.add("This is a list:");
+		expected.add(paragraphStart);
+		TypedBlock list1 = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A line");
+		list1.add(listItem1);
+		TypedBlock list2 = new TypedBlock(BlockType.ORDERED_LIST);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_NUMBER);
+		listItem2.add("And another");
+		list2.add(listItem2);
+		expected.add(list1);
+		expected.add(list2);
 		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
 		paragraphEnd.add("Last line");
 		expected.add(paragraphEnd);
