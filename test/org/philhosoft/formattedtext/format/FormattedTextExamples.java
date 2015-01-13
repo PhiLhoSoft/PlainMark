@@ -27,8 +27,7 @@ public class FormattedTextExamples
 		firstLine.add(new TextFragment("."));
 
 		// Meet new start of line
-		TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
-		document.add(firstLine);
+		TypedBlock document = new TypedBlock(BlockType.DOCUMENT, firstLine);
 
 		// Second line, starting bold
 		Line secondLine = new Line(new DecoratedFragment(FragmentDecoration.STRONG, "Strong init, followed by"));
@@ -90,10 +89,7 @@ public class FormattedTextExamples
 		}
 
 		// Code block
-		TypedBlock code = new TypedBlock(BlockType.CODE);
-		document.add(code);
-		code.add(new Line("Block of code"));
-		code.add(new Line("on several lines"));
+		addCodeBlock(document);
 
 		// Last line, plain text
 		if (withSimpleLines)
@@ -141,10 +137,7 @@ public class FormattedTextExamples
 		}
 
 		// Code block
-		TypedBlock code = new TypedBlock(BlockType.CODE);
-		document.add(code);
-		code.add(new Line("Block of code"));
-		code.add(new Line("on several lines"));
+		addCodeBlock(document);
 
 		// Last line
 		Line lastLine = new Line("Boring plain text and ");
@@ -158,5 +151,17 @@ public class FormattedTextExamples
 		document.add(lastLine);
 
 		return document;
+	}
+
+	private static void addCodeBlock(TypedBlock document)
+	{
+		TypedBlock code = new TypedBlock(BlockType.CODE);
+		document.add(code);
+		code.add(new Line("Block of code"));
+		code.add(new Line("on several lines"));
+		code.add(new Line("{"));
+		code.add(new Line("\twith various"));
+		code.add(new Line("  indentation"));
+		code.add(new Line("}"));
 	}
 }

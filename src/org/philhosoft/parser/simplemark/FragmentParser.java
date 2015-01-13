@@ -22,6 +22,7 @@ public class FragmentParser
 	private Line line = new Line();
 	private SimpleStack<DecoratedFragment> stack = new SimpleStack<DecoratedFragment>();
 	private StringBuilder outputString = new StringBuilder();
+	private boolean inCodeFragment;
 
 	private FragmentParser(StringWalker walker, ParsingParameters parsingParameters)
 	{
@@ -66,6 +67,9 @@ public class FragmentParser
 				break; // Don't go beyond, as this parser remains within line bounds
 			}
 
+			if (inCodeFragment && isStillInsideCodeFragment())
+				continue;
+
 			if (handleEscapeSign())
 				continue;
 
@@ -83,6 +87,32 @@ public class FragmentParser
 		popStack();
 
 		return line;
+	}
+
+	private boolean isStillInsideCodeFragment()
+	{
+		if (walker.current() == parsingParameters.getEscapeSign())
+		{
+			char next = walker.next();
+			if (next == parsingParameters.getEscapeSign() || next == ParsingParameters.CODE_FRAGMENT_SIGN)
+			{
+				// Skip it
+				walker.forward();
+				// And consume next character (if any) literally
+				appendCurrentAndForward();
+				return true;
+			}
+		}
+		if (walker.current() == ParsingParameters.CODE_FRAGMENT_SIGN)
+		{
+			inCodeFragment = false;
+			return false;
+		}
+
+		// Consume character literally
+		appendCurrentAndForward();
+
+		return true;
 	}
 
 	private boolean handleEscapeSign()
@@ -193,6 +223,7 @@ public class FragmentParser
 		// Start a new decoration
 		DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
 		stack.push(fragment);
+		flagCodeFragment(foundDecoration, true);
 	}
 
 	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
@@ -202,20 +233,38 @@ public class FragmentParser
 		if (currentDecoratedFragment.getDecoration() == foundDecoration)
 		{
 			// End of the decorated part
-			if (stack.size() == 1) // Last stacked
-			{
-				line.add(stack.pop());
-			}
-			else
-			{
-				DecoratedFragment fragment = stack.pop();
-				stack.peek().add(fragment);
-			}
+			addFragmentToParent(stack.pop());
+			flagCodeFragment(foundDecoration, false);
 		}
 		else // We start a new, different decoration
 		{
 			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
 			stack.push(fragment);
+			flagCodeFragment(foundDecoration, true);
+		}
+	}
+
+	private void flagCodeFragment(FragmentDecoration foundDecoration, boolean start)
+	{
+		if (foundDecoration == FragmentDecoration.CODE)
+		{
+			inCodeFragment = start;
+		}
+	}
+
+	private void addFragmentToParent(DecoratedFragment fragment)
+	{
+		if (stack.isEmpty()) // Was lLast stacked
+		{
+			line.add(fragment);
+		}
+		else
+		{
+			DecoratedFragment parent = stack.peek();
+			if (parent != null)
+			{
+				parent.add(fragment);
+			}
 		}
 	}
 

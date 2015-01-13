@@ -453,14 +453,14 @@ public class TestBlockParser
 	@Test
 	public void testListStar_multiple()
 	{
-		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\n* Last");
+		StringWalker walker = new StringWalker("* A line\n* And another\n* Last");
 
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
 		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
-		listItem1.add("A mono-entry line");
+		listItem1.add("A line");
 		list.add(listItem1);
 		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
 		listItem2.add("And another");
@@ -473,16 +473,16 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_multipleAndParagraph()
+	public void testListStar_multipleAndParagraph1()
 	{
-		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\n\nLast line");
+		StringWalker walker = new StringWalker("* A line\n* And another\n\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
 		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
-		listItem1.add("A mono-entry line");
+		listItem1.add("A line");
 		list.add(listItem1);
 		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
 		listItem2.add("And another");
@@ -495,16 +495,16 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testListStar_multipleWithParagraph()
+	public void testListStar_multipleAndParagraph2()
 	{
-		StringWalker walker = new StringWalker("* A mono-entry line\n* And another\nLast line");
+		StringWalker walker = new StringWalker("* A line\n* And another\nLast line");
 
 		Block result = BlockParser.parse(walker);
 
 		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
 		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
 		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
-		listItem1.add("A mono-entry line");
+		listItem1.add("A line");
 		list.add(listItem1);
 		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
 		listItem2.add("And another");
@@ -513,6 +513,56 @@ public class TestBlockParser
 		TypedBlock paragraph = new TypedBlock(BlockType.PARAGRAPH);
 		paragraph.add("Last line");
 		expected.add(paragraph);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testListStar_paragraphAndList()
+	{
+		StringWalker walker = new StringWalker("This is a list:\n* A line\n* And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock paragraphStart = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphStart.add("This is a list:");
+		expected.add(paragraphStart);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testListStar_titleAndList()
+	{
+		StringWalker walker = new StringWalker("## List\n* A line\n* And another\nLast line");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock title = new TypedBlock(BlockType.TITLE2);
+		title.add("List");
+		expected.add(title);
+		TypedBlock list = new TypedBlock(BlockType.UNORDERED_LIST);
+		TypedBlock listItem1 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem1.add("A line");
+		list.add(listItem1);
+		TypedBlock listItem2 = new TypedBlock(BlockType.LIST_ITEM_BULLET);
+		listItem2.add("And another");
+		list.add(listItem2);
+		expected.add(list);
+		TypedBlock paragraphEnd = new TypedBlock(BlockType.PARAGRAPH);
+		paragraphEnd.add("Last line");
+		expected.add(paragraphEnd);
 		assertThat(result).isEqualTo(expected);
 	}
 

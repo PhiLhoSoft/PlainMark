@@ -42,6 +42,10 @@ public class TestPlainTextVisitor
 				"\n" +
 				"Block of code\n" +
 				"on several lines\n" +
+				"{\n" +
+				"\twith various\n" +
+				"  indentation\n" +
+				"}\n" +
 				"Last line\n");
 	}
 
@@ -63,6 +67,10 @@ public class TestPlainTextVisitor
 				"Item 2 & Strong fragment, followed by plain text and a nice link (2) - http://www.example.com/#anchor2\n" +
 				"Block of code\n" +
 				"on several lines\n" +
+				"{\n" +
+				"\twith various\n" +
+				"  indentation\n" +
+				"}\n" +
 				"Boring plain text and emphasized text and even deleted text fixed width text.\n");
 	}
 }

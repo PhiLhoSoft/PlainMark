@@ -27,7 +27,7 @@ public class SimpleMark
 		return convertWithVisitor(markupText, visitor);
 	}
 
-	private static String convertWithVisitor(String markupText, MarkupVisitor<VisitorContext> visitor)
+	public static String convertWithVisitor(String markupText, MarkupVisitor<VisitorContext> visitor)
 	{
 		StringWalker walker = new StringWalker(markupText);
 

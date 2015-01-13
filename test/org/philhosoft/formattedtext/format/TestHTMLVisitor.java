@@ -50,23 +50,27 @@ public class TestHTMLVisitor
 	{
 		Block document = FormattedTextExamples.buildTypedBlocks(false);
 
-		HTMLVisitor visitor = new HTMLVisitor();
+		HTMLVisitor visitor = new HTMLVisitor(0);
 		ContextWithStringBuilder ctx = new ContextWithStringBuilder();
 		document.accept(visitor, ctx);
 
 //		System.out.println(ctx.asString());
 		assertThat(ctx.asString()).isEqualTo(
 				"<div>\n" +
-				"<h3>This is a title</h3>\n" +
+				"<h4>This is a title</h4>\n" +
 				"<ul>\n" +
 				"<li>Item &lt;0&gt;</li>\n" +
 				"<li>Item &lt;1&gt;</li>\n" +
 				"<li>Item &lt;2&gt;</li>\n" +
 				"</ul>\n" +
-				"<pre><code>\n" +
+				"<pre><code>" +
 				"Block of code\n" +
-				"on several lines" +
-				"\n</code></pre>\n" +
+				"on several lines\n" +
+				"{\n" +
+				"with various\n" +
+				"  indentation\n" +
+				"}\n" +
+				"</code></pre>\n" +
 				"\n</div>\n");
 	}
 
@@ -82,7 +86,7 @@ public class TestHTMLVisitor
 //		System.out.println(ctx.asString());
 		assertThat(ctx.asString()).isEqualTo(
 				"<div>\n" +
-				"<h3>This is a title</h3>\n" +
+				"<h4>This is a title</h4>\n" +
 				"Line Two<br>\n" +
 				"\n<ul>\n" +
 				"<li>Item &lt;0&gt;</li>\n" +
@@ -90,10 +94,14 @@ public class TestHTMLVisitor
 				"<li>Item &lt;2&gt;</li>\n" +
 				"</ul>\n" +
 				"<br>\n" +
-				"\n<pre><code>\n" +
+				"\n<pre><code>" +
 				"Block of code\n" +
-				"on several lines" +
-				"\n</code></pre>\n" +
+				"on several lines\n" +
+				"{\n" +
+				"    with various\n" +
+				"  indentation\n" +
+				"}\n" +
+				"</code></pre>\n" +
 				"\nLast line" +
 				"\n</div>\n");
 	}
@@ -103,14 +111,14 @@ public class TestHTMLVisitor
 	{
 		Block document = FormattedTextExamples.buildMixedBlockFragments();
 
-		HTMLVisitor visitor = new HTMLVisitor();
+		HTMLVisitor visitor = new HTMLVisitor(8);
 		ContextWithStringBuilder ctx = new ContextWithStringBuilder();
 		document.accept(visitor, ctx);
 
 //		System.out.println(ctx.asString());
 		assertThat(ctx.asString()).isEqualTo(
 				"<div>\n" +
-				"<h3>This is a title</h3>\n" +
+				"<h4>This is a title</h4>\n" +
 				"Start of text with <em>emphasis inside</em>.<br>\n" +
                 "\n" +
 				"<ul>\n" +
@@ -118,9 +126,13 @@ public class TestHTMLVisitor
 				"<li>Item 1 &amp; <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/#anchor1'>a nice <em>link (1)</em></a></li>\n" +
 				"<li>Item 2 &amp; <strong>Strong fragment, followed by</strong> plain text and <a href='http://www.example.com/#anchor2'>a nice <em>link (2)</em></a></li>\n" +
 				"</ul>\n" +
-				"<pre><code>\n" +
+				"<pre><code>" +
 				"Block of code\n" +
 				"on several lines\n" +
+				"{\n" +
+				"        with various\n" +
+				"  indentation\n" +
+				"}\n" +
 				"</code></pre>\n" +
                 "\n" +
 				"Boring plain text and <em>emphasized text <strong>and even </strong><del>deleted text</del><code> fixed width text</code>.</em>\n" +
@@ -158,7 +170,7 @@ public class TestHTMLVisitor
 			{
 				context.append("</i>");
 			}
-		};;
+		};
 		visitor.setFragmentVisitors(fragmentStartVisitor, fragmentEndVisitor);
 		BlockType.Visitor<VisitorContext> blockStartVisitor = new HTMLBlockStartVisitor()
 		{
@@ -191,9 +203,13 @@ public class TestHTMLVisitor
 				"<li>Item 1 &amp; <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/#anchor1'>a nice <i>link (1)</i></a></li>\n" +
 				"<li>Item 2 &amp; <b>Strong fragment, followed by</b> plain text and <a href='http://www.example.com/#anchor2'>a nice <i>link (2)</i></a></li>\n" +
 				"</ul>\n" +
-				"<pre><code>\n" +
+				"<pre><code>" +
 				"Block of code\n" +
 				"on several lines\n" +
+				"{\n" +
+				"    with various\n" +
+				"  indentation\n" +
+				"}\n" +
 				"</code></pre>\n" +
                 "\n" +
 				"Boring plain text and <i>emphasized text <b>and even </b><del>deleted text</del><code> fixed width text</code>.</i>\n" +

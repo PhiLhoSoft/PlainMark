@@ -1,0 +1,93 @@
+.mark
+{
+	font-size: 1.05rem;
+	line-height: 1.1rem;
+}
+
+.mark p:first-child
+{
+	margin-top: 0;
+}
+.mark p:last-child
+{
+	margin-bottom: 0;
+}
+.mark code
+{
+	border: none;
+	padding: 0;
+	color: #375;
+	background-color: rgba(200,200,200,0.3);
+    white-space: pre-wrap;
+}
+.mark a
+{
+	color: #08C;
+	text-decoration: none;
+}
+.mark a, .mark a:visited, .mark a:hover
+{
+	color: #00A;
+}
+.mark pre
+{
+    background-color: #F5F5F5;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px 4px 4px 4px;
+    font-size: 1rem;
+    line-height: 1.05rem;
+    margin: 0 0 8px 0;
+    padding: 8px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.mark pre > code
+{
+	border: none;
+	padding: 0;
+	color: #375;
+	background-color: inherit;
+}
+.mark a
+{
+	font-size: 85%;
+}
+.mark h1
+{
+	font-size: 120%;
+	line-height: 120%;
+}
+.mark h2
+{
+	font-size: 110%;
+	line-height: 110%;
+}
+.mark h3
+{
+	font-size: 100%;
+	line-height: 100%;
+	font-style: italic;
+}
+.mark h1:first-child, .mark h2:first-child, .mark h3:first-child
+{
+	margin-top: 0;
+}
+.mark li
+{
+	line-height: 100%;
+}
+
+table
+{
+	border-spacing: 8px;
+}
+td
+{
+	padding: 8px;
+}
+td:first-child
+{
+	border: 1px solid #CCC;
+	background-color: #EEE;
+}

@@ -9,6 +9,10 @@ import org.philhosoft.formattedtext.ast.FragmentDecoration;
 
 public class ParsingParameters
 {
+	public static final char STRONG_SIGN = '*';
+	public static final char EMPHASIS_SIGN = '_';
+	public static final char DELETE_SIGN = '-';
+	public static final char CODE_FRAGMENT_SIGN = '`';
 	public static final char LINK_START_SIGN = '[';
 	public static final char LINK_END_SIGN = ']';
 	public static final char URL_START_SIGN = '(';
@@ -33,19 +37,19 @@ public class ParsingParameters
 
 	private static final Map<Character, FragmentDecoration> decorations = new HashMap<Character, FragmentDecoration>();
 	{
-		decorations.put('*', FragmentDecoration.STRONG);
-		decorations.put('_', FragmentDecoration.EMPHASIS);
-		decorations.put('-', FragmentDecoration.DELETE);
-		decorations.put('`', FragmentDecoration.CODE);
+		decorations.put(STRONG_SIGN, FragmentDecoration.STRONG);
+		decorations.put(EMPHASIS_SIGN, FragmentDecoration.EMPHASIS);
+		decorations.put(DELETE_SIGN, FragmentDecoration.DELETE);
+		decorations.put(CODE_FRAGMENT_SIGN, FragmentDecoration.CODE);
 	}
 	private static final Map<String, BlockType> blockTypesPerSign = new HashMap<String, BlockType>();
 	{
-		blockTypesPerSign.put("# ", BlockType.TITLE1);
-		blockTypesPerSign.put("## ", BlockType.TITLE2);
-		blockTypesPerSign.put("### ", BlockType.TITLE3);
-		blockTypesPerSign.put("* ", BlockType.LIST_ITEM_BULLET);
-		blockTypesPerSign.put("- ", BlockType.LIST_ITEM_BULLET);
-		blockTypesPerSign.put("+ ", BlockType.LIST_ITEM_BULLET);
+		blockTypesPerSign.put("#", BlockType.TITLE1);
+		blockTypesPerSign.put("##", BlockType.TITLE2);
+		blockTypesPerSign.put("###", BlockType.TITLE3);
+		blockTypesPerSign.put("*", BlockType.LIST_ITEM_BULLET);
+		blockTypesPerSign.put("-", BlockType.LIST_ITEM_BULLET);
+		blockTypesPerSign.put("+", BlockType.LIST_ITEM_BULLET);
 	}
 	private String codeBlockSign = "```";
 

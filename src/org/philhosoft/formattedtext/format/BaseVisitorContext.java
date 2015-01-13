@@ -59,7 +59,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 	@Override
 	public void setFirstLast(boolean first, boolean last)
 	{
-		if (firstLastList.size() > 0)
+		if (!firstLastList.isEmpty())
 		{
 			firstLastList.peek().setFirstLast(first, last);
 		}
@@ -68,7 +68,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 	@Override
 	public void pop()
 	{
-		if (firstLastList.size() > 0)
+		if (!firstLastList.isEmpty())
 		{
 			firstLastList.pop();
 		}
@@ -77,7 +77,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 	@Override
 	public boolean isFirst()
 	{
-		if (firstLastList.size() == 0)
+		if (firstLastList.isEmpty())
 			return true;
 		return firstLastList.peek().getFirst();
 	}
@@ -85,7 +85,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 	@Override
 	public boolean isLast()
 	{
-		if (firstLastList.size() == 0)
+		if (firstLastList.isEmpty())
 			return true;
 		return firstLastList.peek().getLast();
 	}

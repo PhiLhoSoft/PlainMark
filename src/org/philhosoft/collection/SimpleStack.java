@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
  */
 public class SimpleStack<T> implements Iterable<T> // Doesn't implement Collection which has lot of methods I don't use here
 {
-	List<T> stack = new ArrayList<T>();
+	private List<T> stack = new ArrayList<T>();
 
     /**
      * Pushes an element onto this stack.
@@ -106,7 +106,7 @@ public class SimpleStack<T> implements Iterable<T> // Doesn't implement Collecti
 		return stack.size();
 	}
 
-	public boolean isEmmpty()
+	public boolean isEmpty()
 	{
 		return stack.isEmpty();
 	}

@@ -16,6 +16,11 @@ public class TypedBlock implements Block
 	{
 		this.type = type;
 	}
+	public TypedBlock(BlockType type, Block block)
+	{
+		this.type = type;
+		add(block);
+	}
 
 	@Override
 	public void add(String text)

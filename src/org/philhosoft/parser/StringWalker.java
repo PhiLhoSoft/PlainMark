@@ -6,7 +6,8 @@ package org.philhosoft.parser;
 /**
  * Allows to "walk" through a string, character by character, always forward but keeping an eye on the immediate past (and future!).
  * <p>
- * Intended to be used by a parser, abstracting the concept of end-of-line (EOL).
+ * Intended to be used by a parser, abstracting the concept of end-of-line (EOL): the current character is always only newline on a line break,
+ * Windows line breaks are seen as only one char.
  */
 public class StringWalker
 {
@@ -171,7 +172,7 @@ public class StringWalker
 		return true;
 	}
 	/**
-	 * match() with forward offset.
+	 * match() with forward offset relative to the position of the cursor.
 	 */
 	public boolean matchAt(int offset, String s)
 	{
@@ -184,6 +185,24 @@ public class StringWalker
 				return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Returns the character at the given offset from the current character.
+	 * If the position is outside the range of the string to walk, returns the given default character.
+	 * Note: can return a CR or LF character if going over the line boundary.
+	 *
+	 * @param pos  the position / index of the character to fetch
+	 * @param defaultChar  the character to return if the position is invalid
+	 * @return the fetched character or the default one
+	 */
+	public char charAt(int position, char defaultChar)
+	{
+		int pos = position + cursor;
+		if (pos >= 0 && pos < walked.length())
+			return walked.charAt(pos);
+
+		return defaultChar;
 	}
 
 	/**
@@ -235,9 +254,19 @@ public class StringWalker
 		next = safeCharAt(cursor + 1, PLACEHOLDER_CHAR);
 		if (current == '\r' && next == '\n')
 		{
+			// Skip the carriage return we have in Windows line breaks, so we standardize on the newline char.
+			// Don't take in account old Mac (pre-OSX) end-of-line (carriage return only).
 			next = safeCharAt(++cursor + 1, PLACEHOLDER_CHAR);
 		}
 	}
+	/**
+	 * Returns the character at the given position.
+	 * If the position is outside the range of the string to walk, returns the given default character.
+	 *
+	 * @param pos  the position / index of the character to fetch
+	 * @param defaultChar  the character to return if the position is invalid
+	 * @return the fetched character or the default one
+	 */
 	private char safeCharAt(int pos, char defaultChar)
 	{
 		if (pos >= 0 && pos < walked.length())

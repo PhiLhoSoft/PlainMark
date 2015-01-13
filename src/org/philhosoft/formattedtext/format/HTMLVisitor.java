@@ -1,5 +1,7 @@
 package org.philhosoft.formattedtext.format;
 
+import java.util.Arrays;
+
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.FragmentDecoration;
@@ -21,6 +23,16 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	private FragmentDecoration.Visitor<VisitorContext> fragmentEndVisitor = new HTMLFragmentEndVisitor();
 	private BlockType.Visitor<VisitorContext> blockStartVisitor = new HTMLBlockStartVisitor();
 	private BlockType.Visitor<VisitorContext> blockEndVisitor = new HTMLBlockEndVisitor();
+	private int tabSize;
+
+	public HTMLVisitor()
+	{
+		this.tabSize = 4;
+	}
+	public HTMLVisitor(int tabSize)
+	{
+		this.tabSize = tabSize;
+	}
 
 	/**
 	 * Allows overriding the default fragment visitors.
@@ -113,6 +125,9 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 
 	private String normalize(String text)
 	{
-		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		char[] filler = new char[tabSize];
+		Arrays.fill(filler, ' ');
+		String tab = new String(filler);
+		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\t", tab);
 	}
 }

@@ -106,24 +106,21 @@ public class BlockParser
 		}
 		else
 		{
-			if (isSameTitle(blockType, getPreviousType()))
+			TypedBlock parent = fetchParent(blockType);
+			if (parent != null)
 			{
-				stack.peek().add(line);
+				Block child = line;
+				if (blockType == BlockType.LIST_ITEM_BULLET || blockType == BlockType.LIST_ITEM_NUMBER)
+				{
+					child = new TypedBlock(blockType, line);
+				}
+				parent.add(child);
 			}
 			else
 			{
 				popPreviousBlockIfNeeded(blockType);
-				addListIfNeeded(blockType);
-				TypedBlock block = new TypedBlock(blockType);
-				block.add(line);
-				if (blockType == BlockType.LIST_ITEM_BULLET || blockType == BlockType.LIST_ITEM_NUMBER)
-				{
-					stack.peek().add(block);
-				}
-				else
-				{
-					stack.push(block);
-				}
+				TypedBlock block = new TypedBlock(blockType, line);
+				stack.push(block);
 			}
 		}
 	}
@@ -132,7 +129,7 @@ public class BlockParser
 	{
 		if (walker.current() == parsingParameters.getEscapeSign())
 		{
-			String blockSign = checkBlockType(1);
+			String blockSign = checkBlockSign(1);
 			if (blockSign != null || walker.next() == parsingParameters.getEscapeSign())
 			{
 				// Skip this escape (really escaping something)
@@ -143,29 +140,33 @@ public class BlockParser
 			return null;
 		}
 
-		String blockSign = checkBlockType(0);
-		BlockType blockType = parsingParameters.getBlockType(blockSign);
-		processBlockSign(blockSign);
+		String blockSign = checkBlockSign(0);
+		BlockType blockType = processBlockSign(blockSign);
 		return blockType;
 	}
 
-	private String checkBlockType(int offset)
+	private String checkBlockSign(int offset)
 	{
 		for (String blockSign : parsingParameters.getBlockTypeSigns())
 		{
 			if (walker.matchAt(offset, blockSign))
-				return blockSign;
+			{
+				if (StringWalker.isWhitespace(walker.charAt(offset + blockSign.length(), '\0')))
+					return blockSign;
+			}
 		}
 
 		return null;
 	}
 
-	private void processBlockSign(String blockSign)
+	private BlockType processBlockSign(String blockSign)
 	{
 		if (blockSign == null)
-			return;
-		walker.forward(blockSign.length());
+			return null;
+		BlockType blockType = parsingParameters.getBlockType(blockSign);
+		walker.forward(blockSign.length() + 1);
 		walker.skipSpaces();
+		return blockType;
 	}
 
 	private void popPreviousBlockIfNeeded(BlockType blockType)
@@ -191,41 +192,31 @@ public class BlockParser
 		}
 	}
 
-	private void addListIfNeeded(BlockType blockType)
+	private TypedBlock fetchParent(BlockType blockType)
 	{
+		if (isSameTitle(blockType, getPreviousType()))
+			return stack.peek();
+
 		if (blockType == BlockType.LIST_ITEM_BULLET)
-		{
-			addUnorderedListIfNeeded();
-		}
-		else if (blockType == BlockType.LIST_ITEM_NUMBER)
-		{
-			addOrderedListIfNeeded();
-		}
+			return fetchListParent(BlockType.UNORDERED_LIST);
+
+		if (blockType == BlockType.LIST_ITEM_NUMBER)
+			return fetchListParent(BlockType.ORDERED_LIST);
+
+		return null; // No parent
 	}
 
-	private void addUnorderedListIfNeeded()
+	private TypedBlock fetchListParent(BlockType listType)
 	{
-		TypedBlock ul = findInStack(BlockType.UNORDERED_LIST);
-		if (ul == null)
-		{
-			stack.push(new TypedBlock(BlockType.UNORDERED_LIST));
-		}
-		else
-		{
-//				return; // Already in a list
-		}
-	}
-	private void addOrderedListIfNeeded()
-	{
-		TypedBlock ol = findInStack(BlockType.ORDERED_LIST);
-		if (ol == null)
-		{
-			stack.push(new TypedBlock(BlockType.ORDERED_LIST));
-		}
-		else
-		{
-//				return; // Already in a list
-		}
+		TypedBlock list = findInStack(listType);
+		if (list != null)
+			return list;
+
+		popPreviousBlockIfNeeded(listType);
+		list = new TypedBlock(listType);
+		stack.push(list);
+		return list;
+
 	}
 
 	private TypedBlock findInStack(BlockType blockType)
@@ -249,8 +240,7 @@ public class BlockParser
 
 	private void addParagraph(Line line)
 	{
-		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH);
-		block.add(line);
+		TypedBlock block = new TypedBlock(BlockType.PARAGRAPH, line);
 		stack.push(block);
 	}
 
