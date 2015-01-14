@@ -22,10 +22,12 @@ public class DecoratedFragment implements Fragment
 		add(firstText);
 	}
 
+	@Override
 	public void add(String text)
 	{
 		add(new TextFragment(text));
 	}
+	@Override
 	public void add(Fragment fragment)
 	{
 		fragments.add(fragment);

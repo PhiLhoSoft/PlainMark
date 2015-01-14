@@ -9,4 +9,7 @@ package org.philhosoft.formattedtext.ast;
  */
 public interface Fragment extends MarkedText
 {
+	void add(String text);
+
+	void add(Fragment text);
 }

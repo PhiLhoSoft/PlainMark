@@ -1,5 +1,8 @@
 package org.philhosoft.parser.simplemark;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.Fragment;
@@ -20,7 +23,7 @@ public class FragmentParser
 	private StringWalker walker;
 	private ParsingParameters parsingParameters;
 	private Line line = new Line();
-	private SimpleStack<DecoratedFragment> stack = new SimpleStack<DecoratedFragment>();
+	private SimpleStack<Fragment> stack = new SimpleStack<Fragment>();
 	private StringBuilder outputString = new StringBuilder();
 	private boolean inCodeFragment;
 
@@ -59,14 +62,10 @@ public class FragmentParser
 
 	private Line parse()
 	{
-		while (walker.hasMore())
+		// Walk the string, until the line end (line break or end of string) is met.
+		// The parser doesn't go beyond line breaks
+		while (!walker.atLineEnd())
 		{
-			if (walker.atLineEnd())
-			{
-				walker.forward(); // Go to start of next line, if any
-				break; // Don't go beyond, as this parser remains within line bounds
-			}
-
 			if (inCodeFragment && isStillInsideCodeFragment())
 				continue;
 
@@ -82,6 +81,7 @@ public class FragmentParser
 
 			handleDecoration();
 		}
+		walker.forward(); // Go to start of next line, if any
 
 		// We reached the end of line, see if some text remains to be processed
 		popStack();
@@ -152,7 +152,14 @@ public class FragmentParser
 		}
 		if (!processed)
 		{
-			appendCurrentAndForward();
+			if (walker.current() == ParsingParameters.LINK_START_SIGN)
+			{
+				handleLink();
+			}
+			else
+			{
+				appendCurrentAndForward();
+			}
 		}
 	}
 
@@ -164,20 +171,40 @@ public class FragmentParser
 	 */
 	private boolean handleDecorationSign(FragmentDecoration foundDecoration)
 	{
-		DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
-		if (!isCurrentAMarkupSign(foundDecoration, currentDecoratedFragment))
+		Fragment currentFragment = stack.peek(); // null if stack is empty
+		if (!isCurrentAMarkupSign(foundDecoration, currentFragment))
 			return false; // No special treatment, regular char
-		if (currentDecoratedFragment == null)
+		if (currentFragment == null)
 		{
 			// Not in a decoration so far
 			handleNewDecoration(foundDecoration);
 		}
-		else // Inside a decoration
+		else
 		{
-			handleNestedDecoration(foundDecoration, currentDecoratedFragment);
+			// Inside a decoration
+			handleNestedDecoration(foundDecoration, (DecoratedFragment) currentFragment);
 		}
 		walker.forward(); // Skip this processed decoration character
 		return true;
+	}
+
+	private void handleLink()
+	{
+		Fragment currentFragment = stack.peek(); // null if stack is empty
+		if (currentFragment == null)
+		{
+			// Not in a decoration so far
+			// We already captured some text, add it as text fragment
+			addOutputToCurrentFragment();
+			// Start a new fragment
+			LinkFragment link = new LinkFragment();
+			stack.push(link);
+		}
+		else
+		{
+			// Inside a decoration
+		}
+		walker.forward(); // Skip this processed decoration character
 	}
 
 	/**
@@ -186,16 +213,17 @@ public class FragmentParser
 	 * Assumes we know already that walker.current() is one of the markup signs.
 	 *
 	 * @param foundDecoration  the decoration corresponding to walker.current()
-	 * @param currentDecoratedFragment  the context where the sign is found
+	 * @param currentFragment  the context where the sign is found
 	 * @return true if it is OK, false if it is a plain character
 	 */
-	private boolean isCurrentAMarkupSign(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
+	private boolean isCurrentAMarkupSign(FragmentDecoration foundDecoration, Fragment currentFragment)
 	{
 		// We know current is a markup sign, but context can tell otherwise
 		char previous = walker.previous();
 		char next = walker.next();
-		boolean starting = currentDecoratedFragment == null || // Not in a decoration
-				currentDecoratedFragment.getDecoration() != foundDecoration; // Different decoration
+		boolean starting = currentFragment == null || // Not in a decoration
+				(currentFragment instanceof DecoratedFragment &&
+				((DecoratedFragment) currentFragment).getDecoration() != foundDecoration); // Different decoration
 
 		// Is this a starting sign?
 		if (starting &&
@@ -221,16 +249,16 @@ public class FragmentParser
 		// We already captured some text, add it as text fragment
 		addOutputToCurrentFragment();
 		// Start a new decoration
-		DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
+		Fragment fragment = new DecoratedFragment(foundDecoration);
 		stack.push(fragment);
 		flagCodeFragment(foundDecoration, true);
 	}
 
-	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentDecoratedFragment)
+	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentFragment)
 	{
-		addOutputStringTo(currentDecoratedFragment);
+		addOutputStringTo(currentFragment);
 
-		if (currentDecoratedFragment.getDecoration() == foundDecoration)
+		if (currentFragment.getDecoration() == foundDecoration)
 		{
 			// End of the decorated part
 			addFragmentToParent(stack.pop());
@@ -238,7 +266,7 @@ public class FragmentParser
 		}
 		else // We start a new, different decoration
 		{
-			DecoratedFragment fragment = new DecoratedFragment(foundDecoration);
+			Fragment fragment = new DecoratedFragment(foundDecoration);
 			stack.push(fragment);
 			flagCodeFragment(foundDecoration, true);
 		}
@@ -252,7 +280,7 @@ public class FragmentParser
 		}
 	}
 
-	private void addFragmentToParent(DecoratedFragment fragment)
+	private void addFragmentToParent(Fragment fragment)
 	{
 		if (stack.isEmpty()) // Was lLast stacked
 		{
@@ -260,7 +288,7 @@ public class FragmentParser
 		}
 		else
 		{
-			DecoratedFragment parent = stack.peek();
+			Fragment parent = stack.peek();
 			if (parent != null)
 			{
 				parent.add(fragment);
@@ -286,23 +314,23 @@ public class FragmentParser
 	 */
 	private void addFragment(Fragment fragment)
 	{
-		DecoratedFragment currentDecoratedFragment = stack.peek(); // null if stack is empty
-		if (currentDecoratedFragment == null)
+		Fragment currentFragment = stack.peek(); // null if stack is empty
+		if (currentFragment == null)
 		{
 			// No current style, just add at top level
 			line.add(fragment);
 		}
 		else
 		{
-			currentDecoratedFragment.add(fragment);
+			currentFragment.add(fragment);
 		}
 	}
 
-	private void addOutputStringTo(DecoratedFragment currentDecoratedFragment)
+	private void addOutputStringTo(Fragment currentFragment)
 	{
 		if (outputString.length() > 0)
 		{
-			currentDecoratedFragment.add(outputString.toString());
+			currentFragment.add(outputString.toString());
 			outputString.setLength(0); // Clear
 		}
 	}
@@ -360,9 +388,21 @@ public class FragmentParser
 		RestoreFragmentVisitor fragmentRestore = new RestoreFragmentVisitor();
 		while (stack.size() > 0)
 		{
-			DecoratedFragment fragment = stack.pollLast();
-			fragment.getDecoration().accept(fragmentRestore, outputString);
-			for (Fragment subFragment : fragment.getFragments())
+			Fragment fragment = stack.pollLast();
+			List<Fragment> decoratedFragments = new ArrayList<Fragment>();
+			if (fragment instanceof DecoratedFragment)
+			{
+				((DecoratedFragment) fragment).getDecoration().accept(fragmentRestore, outputString);
+				decoratedFragments = ((DecoratedFragment) fragment).getFragments();
+			}
+			else if (fragment instanceof LinkFragment)
+			{
+				outputString.append(ParsingParameters.LINK_START_SIGN);
+				decoratedFragments = ((LinkFragment) fragment).getFragments();
+			}
+			else
+				throw new IllegalStateException("Shouldn't have " + fragment.getClass().getName() + " in stack!");
+			for (Fragment subFragment : decoratedFragments)
 			{
 				if (subFragment instanceof LinkFragment || subFragment instanceof DecoratedFragment)
 				{

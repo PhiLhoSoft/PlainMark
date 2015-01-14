@@ -17,10 +17,12 @@ public class LinkFragment implements Fragment
 		this.url = url;
 	}
 
+	@Override
 	public void add(String text)
 	{
 		add(new TextFragment(text));
 	}
+	@Override
 	public void add(Fragment newFragment)
 	{
 		fragments.add(newFragment);

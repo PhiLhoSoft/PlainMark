@@ -189,20 +189,35 @@ public class StringWalker
 
 	/**
 	 * Returns the character at the given offset from the current character.
-	 * If the position is outside the range of the string to walk, returns the given default character.
+	 * Can check with {@link StringWalker#isValid(char)} if the character is a valid one
+	 * (position outside the range of the string to walk).
 	 * Note: can return a CR or LF character if going over the line boundary.
 	 *
 	 * @param pos  the position / index of the character to fetch
-	 * @param defaultChar  the character to return if the position is invalid
-	 * @return the fetched character or the default one
+	 *
+	 * @return the fetched character
 	 */
-	public char charAt(int position, char defaultChar)
+	public char charAt(int position)
 	{
 		int pos = position + cursor;
 		if (pos >= 0 && pos < walked.length())
 			return walked.charAt(pos);
 
-		return defaultChar;
+		return PLACEHOLDER_CHAR;
+	}
+
+	/**
+	 * Tells if the given character is a valid one.
+	 * "Valid" applies only to return values of {@link StringWalker#previous()}, {@link StringWalker#current()},
+	 * {@link StringWalker#next()} or {@link StringWalker#charAt(int)}.
+	 * These values are invalid if the corresponding position in the string is invalid (beyond its bounds).
+	 *
+	 * @param c  the character to check
+	 * @return true if the character is valid, false otherwise
+	 */
+	public boolean isValid(char c)
+	{
+		return c != PLACEHOLDER_CHAR;
 	}
 
 	/**

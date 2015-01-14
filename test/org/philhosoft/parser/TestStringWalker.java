@@ -13,10 +13,10 @@ public class TestStringWalker
 		String s = "Simple";
 		StringWalker walker = new StringWalker(s);
 
-		assertThat(walker.charAt(0, '\0')).isEqualTo('S');
-		assertThat(walker.charAt(5, '\0')).isEqualTo('e');
-		assertThat(walker.charAt(7, '\0')).isEqualTo('\0');
-		assertThat(walker.charAt(-1, '\0')).isEqualTo('\0');
+		assertThat(walker.charAt(0)).isEqualTo('S');
+		assertThat(walker.charAt(5)).isEqualTo('e');
+		assertThat(walker.charAt(7)).isEqualTo('\0');
+		assertThat(walker.charAt(-1)).isEqualTo('\0');
 
 		assertThat(walker.hasMore()).isTrue();
 		assertThat(walker.atLineEnd()).isFalse();
@@ -74,11 +74,11 @@ public class TestStringWalker
 		assertThat(walker.match("leet")).isFalse();
 		assertThat(walker.matchAt(1, "le")).isFalse();
 
-		assertThat(walker.charAt(-1, '\0')).isEqualTo('p');
-		assertThat(walker.charAt(0, '\0')).isEqualTo('l');
-		assertThat(walker.charAt(1, '\0')).isEqualTo('e');
-		assertThat(walker.charAt(2, '\0')).isEqualTo('\0');
-		assertThat(walker.charAt(-12, '\0')).isEqualTo('\0');
+		assertThat(walker.charAt(-1)).isEqualTo('p');
+		assertThat(walker.charAt(0)).isEqualTo('l');
+		assertThat(walker.charAt(1)).isEqualTo('e');
+		assertThat(walker.charAt(2)).isEqualTo('\0');
+		assertThat(walker.charAt(-12)).isEqualTo('\0');
 
 		walker.forward(2);
 
@@ -140,13 +140,13 @@ public class TestStringWalker
 		String s = "Line\nBreak";
 		StringWalker walker = new StringWalker(s);
 
-		assertThat(walker.charAt(0, '\0')).isEqualTo('L');
-		assertThat(walker.charAt(3, '\0')).isEqualTo('e');
-		assertThat(walker.charAt(4, '\0')).isEqualTo('\n');
-		assertThat(walker.charAt(5, '\0')).isEqualTo('B');
-		assertThat(walker.charAt(9, '\0')).isEqualTo('k');
-		assertThat(walker.charAt(12, '\0')).isEqualTo('\0');
-		assertThat(walker.charAt(-1, '\0')).isEqualTo('\0');
+		assertThat(walker.charAt(0)).isEqualTo('L');
+		assertThat(walker.charAt(3)).isEqualTo('e');
+		assertThat(walker.charAt(4)).isEqualTo('\n');
+		assertThat(walker.charAt(5)).isEqualTo('B');
+		assertThat(walker.charAt(9)).isEqualTo('k');
+		assertThat(walker.charAt(12)).isEqualTo('\0');
+		assertThat(walker.charAt(-1)).isEqualTo('\0');
 
 		walker.forward(3);
 
@@ -161,12 +161,12 @@ public class TestStringWalker
 		assertThat(walker.match('e', 'e')).isFalse();
 		assertThat(walker.match("en")).isFalse();
 
-		assertThat(walker.charAt(-1, '\0')).isEqualTo('n');
-		assertThat(walker.charAt(0, '\0')).isEqualTo('e');
-		assertThat(walker.charAt(1, '\0')).isEqualTo('\n');
-		assertThat(walker.charAt(2, '\0')).isEqualTo('B');
-		assertThat(walker.charAt(12, '\0')).isEqualTo('\0');
-		assertThat(walker.charAt(-12, '\0')).isEqualTo('\0');
+		assertThat(walker.charAt(-1)).isEqualTo('n');
+		assertThat(walker.charAt(0)).isEqualTo('e');
+		assertThat(walker.charAt(1)).isEqualTo('\n');
+		assertThat(walker.charAt(2)).isEqualTo('B');
+		assertThat(walker.charAt(12)).isEqualTo('\0');
+		assertThat(walker.charAt(-12)).isEqualTo('\0');
 
 		walker.forward();
 

@@ -13,6 +13,7 @@ public class ParsingParameters
 	public static final char EMPHASIS_SIGN = '_';
 	public static final char DELETE_SIGN = '-';
 	public static final char CODE_FRAGMENT_SIGN = '`';
+
 	public static final char LINK_START_SIGN = '[';
 	public static final char LINK_END_SIGN = ']';
 	public static final char URL_START_SIGN = '(';

@@ -13,6 +13,18 @@ public class TextFragment implements Fragment
 		this.text = text;
 	}
 
+	@Override
+	public void add(String text)
+	{
+		this.text += text;
+	}
+
+	@Override
+	public void add(Fragment text)
+	{
+		throw new UnsupportedOperationException("Text fragment doesn't accept other fragments");
+	}
+
 	public String getText()
 	{
 		return text;

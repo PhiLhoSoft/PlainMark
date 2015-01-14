@@ -12,6 +12,8 @@ import org.philhosoft.parser.StringWalker;
  */
 public class BlockParser
 {
+	private static final String ORDERED_LIST_DIGIT = "0";
+
 	private StringWalker walker;
 	private ParsingParameters parsingParameters;
 	private TypedBlock document = new TypedBlock(BlockType.DOCUMENT);
@@ -151,7 +153,7 @@ public class BlockParser
 		{
 			if (walker.matchAt(offset, blockSign))
 			{
-				if (StringWalker.isWhitespace(walker.charAt(offset + blockSign.length(), '\0')))
+				if (StringWalker.isWhitespace(walker.charAt(offset + blockSign.length())))
 					return blockSign;
 			}
 		}
@@ -160,19 +162,20 @@ public class BlockParser
 
 	private String checkNumberedListItem(int offset)
 	{
-		if (!StringWalker.isDigit(walker.charAt(offset, '\0')))
+		if (!StringWalker.isDigit(walker.charAt(offset)))
 			return null;
 
-		String digits = "0";
+		StringBuilder digits = new StringBuilder(ORDERED_LIST_DIGIT);
 		int dn = 1;
-		while (StringWalker.isDigit(walker.charAt(offset + dn, '\0')))
+		while (StringWalker.isDigit(walker.charAt(offset + dn)))
 		{
 			dn++;
-			digits += "0"; // I don't expect more than 2 or 3 digits...
+			digits.append(ORDERED_LIST_DIGIT); // I don't expect more than 2 or 3 digits...
 		}
-		if (parsingParameters.isOrderedListSuffix(walker.charAt(offset + dn, '\0')) &&
-				StringWalker.isWhitespace(walker.charAt(offset + dn + 1, '\0')))
-			return digits + ".";
+		digits.append(".");
+		if (parsingParameters.isOrderedListSuffix(walker.charAt(offset + dn)) &&
+				StringWalker.isWhitespace(walker.charAt(offset + dn + 1)))
+			return digits.toString();
 
 		return null;
 	}
@@ -181,7 +184,8 @@ public class BlockParser
 	{
 		if (blockSign == null)
 			return null;
-		BlockType blockType = blockSign.startsWith("0") ? BlockType.LIST_ITEM_NUMBER : parsingParameters.getBlockType(blockSign);
+		BlockType blockType = blockSign.startsWith(
+				ORDERED_LIST_DIGIT) ? BlockType.LIST_ITEM_NUMBER : parsingParameters.getBlockType(blockSign);
 		walker.forward(blockSign.length() + 1); // +1 for mandatory whitespace after the sign
 		walker.skipSpaces();
 		return blockType;

@@ -593,7 +593,6 @@ public class TestFragmentParser
 		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
 	}
 
-	@Ignore
 	@Test
 	public void testURL_explicit()
 	{
