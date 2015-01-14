@@ -402,13 +402,13 @@ public class TestBlockParser
 	}
 
 	@Test
-	public void testCodeBlock_escaped()
+	public void testCodeBlock_escaped1()
 	{
 		StringWalker walker = new StringWalker(
 				"Plain text before\n" +
-				"~```\n" +
-				"// Comment *line*\n\n" +
-				"~```\n" +
+						"~```\n" +
+						"// Comment *line*\n\n" +
+						"~```\n" +
 				"And plain text after");
 
 		Block result = BlockParser.parse(walker);
@@ -418,8 +418,38 @@ public class TestBlockParser
 		Line l1 = new Line("Plain text before");
 		p1.add(l1);
 		Line l2 = new Line("`");
-		DecoratedFragment df1 = new DecoratedFragment(FragmentDecoration.CODE);
-		l2.add(df1);
+		l2.add("``");
+		p1.add(l2);
+		Line l3 = new Line("// Comment ");
+		DecoratedFragment df2 = new DecoratedFragment(FragmentDecoration.STRONG, "line");
+		l3.add(df2);
+		p1.add(l3);
+		TypedBlock p2 = new TypedBlock(BlockType.PARAGRAPH);
+		p2.add(l2);
+		Line l4 = new Line("And plain text after");
+		p2.add(l4);
+		expected.add(p1);
+		expected.add(p2);
+		assertThat(result).isEqualTo(expected);
+	}
+
+	@Test
+	public void testCodeBlock_escaped2()
+	{
+		StringWalker walker = new StringWalker(
+				"Plain text before\n" +
+				"~`~`~`\n" +
+				"// Comment *line*\n\n" +
+				"~`~`~`\n" +
+				"And plain text after");
+
+		Block result = BlockParser.parse(walker);
+
+		TypedBlock expected = new TypedBlock(BlockType.DOCUMENT);
+		TypedBlock p1 = new TypedBlock(BlockType.PARAGRAPH);
+		Line l1 = new Line("Plain text before");
+		p1.add(l1);
+		Line l2 = new Line("```");
 		p1.add(l2);
 		Line l3 = new Line("// Comment ");
 		DecoratedFragment df2 = new DecoratedFragment(FragmentDecoration.STRONG, "line");

@@ -2,7 +2,6 @@ package org.philhosoft.parser.simplemark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
@@ -105,24 +104,51 @@ public class TestFragmentParser
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
-	@Ignore // TODO
 	@Test
 	public void testSingleDecoration_doubleCode()
 	{
 		StringWalker walker = new StringWalker("Empty code `` is kept literal");
 
-		Line expected = new Line("Empty code `` is kept literal");
+		Line expected = new Line("Empty code ");
+		expected.add("`` is kept literal");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
-	@Ignore // TODO
 	@Test
 	public void testSingleDecoration_doubleStrong()
 	{
 		StringWalker walker = new StringWalker("Empty strong ** is kept literal");
 
-		Line expected = new Line("Empty strong ** is kept literal");
+		Line expected = new Line("Empty strong ");
+		expected.add("** is kept literal");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_strongDoubleEmphasized()
+	{
+		StringWalker walker = new StringWalker("Empty decorations *__* are kept literal");
+
+		Line expected = new Line("Empty decorations ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "__");
+		expected.add(df);
+		expected.add(" are kept literal");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testSingleDecoration_doubleStrongInEmphasized()
+	{
+		StringWalker walker = new StringWalker("Empty _strong ** is kept_ literal");
+
+		Line expected = new Line("Empty ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "strong ");
+		df.add("** is kept");
+		expected.add(df);
+		expected.add(" literal");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -196,7 +222,7 @@ public class TestFragmentParser
 		expected.add(dfs);
 		expected.add(" text.");
 
-//		checkExpected(expected);
+		//		checkExpected(expected);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -243,7 +269,7 @@ public class TestFragmentParser
 		expected.add(dfs);
 		expected.add(" text.");
 
-//		checkExpected(expected);
+		//		checkExpected(expected);
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -594,11 +620,11 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_explicit()
+	public void testURL_explicit_simple()
 	{
 		StringWalker walker = new StringWalker("I [link](http://www.example.com) to a URL");
 
-		Line expected = new Line();
+		Line expected = new Line("I ");
 		LinkFragment lf = new LinkFragment("link", "http://www.example.com");
 		expected.add(lf);
 		expected.add(" to a URL");
@@ -606,6 +632,296 @@ public class TestFragmentParser
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
 
+	@Test
+	public void testURL_explicit_escaped()
+	{
+		StringWalker walker = new StringWalker("I ~[link](http://www.example.com) to a URL");
+
+		Line expected = new Line("I [link](");
+		LinkFragment lf = new LinkFragment("www.example.com", "http://www.example.com");
+		expected.add(lf);
+		expected.add(") to a URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withDecoration()
+	{
+		StringWalker walker = new StringWalker("I [can *do* a link](/wizz/?f(0)=1&f(1)=2) to a URL");
+
+		Line expected = new Line("I ");
+		LinkFragment lf = new LinkFragment("can ", "/wizz/?f(0)=1&f(1)=2");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "do");
+		lf.add(df);
+		lf.add(" a link");
+		expected.add(lf);
+		expected.add(" to a URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withUnterminatedDecoration()
+	{
+		StringWalker walker = new StringWalker("Link with [Unterminated *markup](there)");
+
+		Line expected = new Line("Link with ");
+		LinkFragment lf = new LinkFragment("Unterminated ", "there");
+		lf.add("*markup");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withDecorations()
+	{
+		StringWalker walker = new StringWalker("[Link *bold and _italic_* text](foo/bar)");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("Link ", "foo/bar");
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG, "bold and ");
+		DecoratedFragment dfe = new DecoratedFragment(FragmentDecoration.EMPHASIS, "italic");
+		dfb.add(dfe);
+		lf.add(dfb);
+		lf.add(" text");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_insideDecorations()
+	{
+		StringWalker walker = new StringWalker("*[Bold Link](mailto:foo@baz.museum)*");
+
+		Line expected = new Line();
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG);
+		LinkFragment lf = new LinkFragment("Bold Link", "mailto:foo@baz.museum");
+		dfb.add(lf);
+		expected.add(dfb);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withOneBracket()
+	{
+		StringWalker walker = new StringWalker("[Link bracket~] text](../bar)");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("Link bracket] text", "../bar");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withOneClosingParenthesis()
+	{
+		StringWalker walker = new StringWalker("Link: [Text](../foo=')') (literal closing parenthesis)");
+
+		Line expected = new Line("Link: ");
+		LinkFragment lf = new LinkFragment("Text", "../foo='");
+		expected.add(lf);
+		expected.add("') (literal closing parenthesis)");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLinkWithOneOpeningParenthesis()
+	{
+		StringWalker walker = new StringWalker("Link: [Text](../foo='(') (literal closing parenthesis)");
+
+		Line expected = new Line("Link: ");
+		expected.add("[");
+		expected.add("Text");
+		expected.add("](");
+		expected.add("../foo='(') (literal closing parenthesis)");
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withNestedBrackets()
+	{
+		StringWalker walker = new StringWalker("[Link [brackets] text](foo/bar#doh)");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("Link ", "foo/bar#doh");
+		lf.add("[");
+		lf.add("brackets");
+		lf.add("] text");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink()
+	{
+		StringWalker walker = new StringWalker("[Link [brackets] text]");
+
+		Line expected = new Line("[");
+		expected.add("Link ");
+		expected.add("[");
+		expected.add("brackets");
+		expected.add("] text");
+		expected.add("]");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withNestedBracketsAndDecoration1()
+	{
+		StringWalker walker = new StringWalker("[Link [*brackets*] text](foo/bar#doh)");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("Link ", "foo/bar#doh");
+		lf.add("[");
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG, "brackets");
+		lf.add(dfb);
+		lf.add("] text");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withNestedBracketsAndDecoration2()
+	{
+		StringWalker walker = new StringWalker("[Link *[brackets] text*](foo/bar#doh)");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("Link ", "foo/bar#doh");
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG, "[");
+		dfb.add("brackets");
+		dfb.add("] text");
+		lf.add(dfb);
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLinkWithDecoration1()
+	{
+		StringWalker walker = new StringWalker("[Not Link *[brackets]* text]");
+
+		Line expected = new Line("[");
+		expected.add("Not Link ");
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG, "[");
+		dfb.add("brackets");
+		dfb.add("]");
+		expected.add(dfb);
+		expected.add(" text");
+		expected.add("]");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLinkWithDecoration2()
+	{
+		StringWalker walker = new StringWalker("[Not Link *[brackets] text*]");
+
+		Line expected = new Line("[");
+		expected.add("Not Link ");
+		DecoratedFragment dfb = new DecoratedFragment(FragmentDecoration.STRONG, "[");
+		dfb.add("brackets");
+		dfb.add("] text");
+		expected.add(dfb);
+		expected.add("]");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink1()
+	{
+		StringWalker walker = new StringWalker("Foo](bar");
+
+		Line expected = new Line("Foo](bar");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink2()
+	{
+		StringWalker walker = new StringWalker("Not [link");
+
+		Line expected = new Line("Not ");
+		expected.add("[link");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink3()
+	{
+		StringWalker walker = new StringWalker("Not [link](");
+
+		Line expected = new Line("Not ");
+		expected.add("[");
+		expected.add("link");
+		expected.add("](");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink4()
+	{
+		StringWalker walker = new StringWalker("Not [link](whatever");
+
+		Line expected = new Line("Not ");
+		expected.add("[");
+		expected.add("link");
+		expected.add("](");
+		expected.add("whatever");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink5()
+	{
+		StringWalker walker = new StringWalker("Not [link](http://bla.com/ space in URL");
+
+		Line expected = new Line("Not ");
+		expected.add("[");
+		expected.add("link");
+		expected.add("](");
+		expected.add("http://bla.com/ space in URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink6()
+	{
+		StringWalker walker = new StringWalker("Not link with Unterminated *markup](there)");
+
+		Line expected = new Line("Not link with Unterminated ");
+		expected.add("*markup](there)");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_notLink7()
+	{
+		StringWalker walker = new StringWalker("Almost Link with [Unterminated *markup](whatever");
+
+		Line expected = new Line("Almost Link with ");
+		expected.add("[Unterminated ");
+		expected.add("*markup](whatever");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
 
 
 	@SuppressWarnings("unused")

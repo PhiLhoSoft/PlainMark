@@ -25,6 +25,7 @@ public class FragmentParser
 	private Line line = new Line();
 	private SimpleStack<Fragment> stack = new SimpleStack<Fragment>();
 	private StringBuilder outputString = new StringBuilder();
+	private RestoreFragmentVisitor fragmentRestore = new RestoreFragmentVisitor();
 	private boolean inCodeFragment;
 
 	private FragmentParser(StringWalker walker, ParsingParameters parsingParameters)
@@ -79,7 +80,7 @@ public class FragmentParser
 				continue;
 			}
 
-			handleDecoration();
+			handleMarkup();
 		}
 		walker.forward(); // Go to start of next line, if any
 
@@ -122,6 +123,7 @@ public class FragmentParser
 		char next = walker.next();
 		if (parsingParameters.getFragmentDecoration(next) != null ||
 				next == ParsingParameters.LINK_START_SIGN ||
+				next == ParsingParameters.LINK_END_SIGN ||
 				next == parsingParameters.getEscapeSign())
 		{
 			// Skip it
@@ -142,7 +144,7 @@ public class FragmentParser
 		}
 	}
 
-	private void handleDecoration()
+	private void handleMarkup()
 	{
 		FragmentDecoration decoration = parsingParameters.getFragmentDecoration(walker.current());
 		boolean processed = false;
@@ -154,12 +156,17 @@ public class FragmentParser
 		{
 			if (walker.current() == ParsingParameters.LINK_START_SIGN)
 			{
-				handleLink();
+				handleLinkStart();
+				processed = true;
 			}
-			else
+			else if (walker.current() == ParsingParameters.LINK_END_SIGN)
 			{
-				appendCurrentAndForward();
+				processed = handleLinkEnd();
 			}
+		}
+		if (!processed)
+		{
+			appendCurrentAndForward();
 		}
 	}
 
@@ -181,30 +188,67 @@ public class FragmentParser
 		}
 		else
 		{
-			// Inside a decoration
-			handleNestedDecoration(foundDecoration, (DecoratedFragment) currentFragment);
+			// Inside a parent fragment
+			handleDecorationInsideAnother(foundDecoration, currentFragment);
 		}
 		walker.forward(); // Skip this processed decoration character
 		return true;
 	}
 
-	private void handleLink()
+	private void handleLinkStart()
 	{
-		Fragment currentFragment = stack.peek(); // null if stack is empty
-		if (currentFragment == null)
-		{
-			// Not in a decoration so far
-			// We already captured some text, add it as text fragment
-			addOutputToCurrentFragment();
-			// Start a new fragment
-			LinkFragment link = new LinkFragment();
-			stack.push(link);
-		}
-		else
-		{
-			// Inside a decoration
-		}
+		// We already captured some text, add it as text fragment
+		addOutputStringToCurrentFragment();
+		// Start a new fragment
+		LinkFragment link = new LinkFragment();
+		stack.push(link);
 		walker.forward(); // Skip this processed decoration character
+	}
+
+	private boolean handleLinkEnd()
+	{
+		if (walker.next() == ParsingParameters.URL_START_SIGN)
+		{
+			// We are really in a link, if there is one in the stack
+			LinkFragment parent = findLinkInStack();
+			// Search the link up, we will have to pop out the unterminated fragments if we find them
+			// TODO
+			if (parent != null)
+			{
+				addOutputStringToCurrentFragment();
+				stack.pop();
+				walker.forward(2); // Skip ](
+				if (addURLUpToClosingParenthesis((LinkFragment) parent))
+				{
+					addFragment(parent);
+				}
+				return true;
+			}
+		}
+
+		// Not a link end
+
+		// Find if we have a link in the stack. If so, we deactivate it: we found nested brackets.
+		Fragment currentFragment = stack.peek();
+		if (currentFragment instanceof LinkFragment)
+		{
+			addOutputStringToCurrentFragment();
+			stack.pop();
+			convertLinkToTextFragments(currentFragment);
+			return false;
+		}
+
+		return false;
+	}
+
+	private LinkFragment findLinkInStack()
+	{
+		for (Fragment fragment : stack)
+		{
+			if (fragment instanceof LinkFragment)
+				return (LinkFragment) fragment;
+		}
+		return null;
 	}
 
 	/**
@@ -223,7 +267,8 @@ public class FragmentParser
 		char next = walker.next();
 		boolean starting = currentFragment == null || // Not in a decoration
 				(currentFragment instanceof DecoratedFragment &&
-				((DecoratedFragment) currentFragment).getDecoration() != foundDecoration); // Different decoration
+				((DecoratedFragment) currentFragment).getDecoration() != foundDecoration) || // Different decoration
+				currentFragment instanceof LinkFragment;
 
 		// Is this a starting sign?
 		if (starting &&
@@ -247,29 +292,48 @@ public class FragmentParser
 	private void handleNewDecoration(FragmentDecoration foundDecoration)
 	{
 		// We already captured some text, add it as text fragment
-		addOutputToCurrentFragment();
+		addOutputStringToCurrentFragment();
 		// Start a new decoration
 		Fragment fragment = new DecoratedFragment(foundDecoration);
 		stack.push(fragment);
 		flagCodeFragment(foundDecoration, true);
 	}
 
-	private void handleNestedDecoration(FragmentDecoration foundDecoration, DecoratedFragment currentFragment)
+	private void handleDecorationInsideAnother(FragmentDecoration foundDecoration, Fragment parentFragment)
 	{
-		addOutputStringTo(currentFragment);
+		if (parentFragment instanceof DecoratedFragment)
+		{
+			DecoratedFragment parent = (DecoratedFragment) parentFragment;
+			if (parent.getDecoration() == foundDecoration)
+			{
+				// End of the decorated part
+				handleClosingDecoration(foundDecoration, parent);
+				return;
+			}
+		}
 
-		if (currentFragment.getDecoration() == foundDecoration)
+		// We start a new, different, nested decoration
+		addOutputStringTo(parentFragment);
+		Fragment fragment = new DecoratedFragment(foundDecoration);
+		stack.push(fragment);
+		flagCodeFragment(foundDecoration, true);
+	}
+
+	private void handleClosingDecoration(FragmentDecoration foundDecoration, DecoratedFragment parent)
+	{
+		if (parent.getFragments().isEmpty() && outputString.length() == 0)
 		{
-			// End of the decorated part
+			// Empty fragment, restore the initial decoration sign twice
+			foundDecoration.accept(fragmentRestore, outputString);
+			foundDecoration.accept(fragmentRestore, outputString);
+			stack.pop();
+		}
+		else
+		{
+			addOutputStringTo(parent);
 			addFragmentToParent(stack.pop());
-			flagCodeFragment(foundDecoration, false);
 		}
-		else // We start a new, different decoration
-		{
-			Fragment fragment = new DecoratedFragment(foundDecoration);
-			stack.push(fragment);
-			flagCodeFragment(foundDecoration, true);
-		}
+		flagCodeFragment(foundDecoration, false);
 	}
 
 	private void flagCodeFragment(FragmentDecoration foundDecoration, boolean start)
@@ -296,10 +360,19 @@ public class FragmentParser
 		}
 	}
 
+	private void addOutputStringTo(Fragment currentFragment)
+	{
+		if (outputString.length() > 0)
+		{
+			currentFragment.add(outputString.toString());
+			outputString.setLength(0); // Clear
+		}
+	}
+
 	/**
 	 * Adds the current content of outputString to the current fragment.
 	 */
-	private void addOutputToCurrentFragment()
+	private void addOutputStringToCurrentFragment()
 	{
 		if (outputString.length() > 0)
 		{
@@ -326,15 +399,6 @@ public class FragmentParser
 		}
 	}
 
-	private void addOutputStringTo(Fragment currentFragment)
-	{
-		if (outputString.length() > 0)
-		{
-			currentFragment.add(outputString.toString());
-			outputString.setLength(0); // Clear
-		}
-	}
-
 	private String findURLPrefix()
 	{
 		for (String p : parsingParameters.getUrlPrefixes())
@@ -354,16 +418,37 @@ public class FragmentParser
 			outputString.append(urlPrefix);
 			return;
 		}
-		addOutputToCurrentFragment();
-		char[] validURLChars = parsingParameters.getValidURLChars();
-		while (StringWalker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
-		{
-			outputString.append(walker.current());
-			walker.forward();
-		}
+		addOutputStringToCurrentFragment();
+		walkTheURL();
 		LinkFragment lf = makeLinkFragmentFromURL(urlPrefix, outputString.toString());
 		addFragment(lf);
 		outputString.setLength(0);
+	}
+
+	private boolean addURLUpToClosingParenthesis(LinkFragment parent)
+	{
+		boolean valid = walkTheURL();
+		if (!valid)
+		{
+			convertLinkToTextFragments(parent);
+			addFragment(new TextFragment(new String(new char[] { ParsingParameters.LINK_END_SIGN, ParsingParameters.URL_START_SIGN })));
+		}
+		else
+		{
+			walker.forward(); // Skip closing parenthesis
+			parent.addURL(outputString.toString());
+			outputString.setLength(0);
+		}
+		return valid;
+	}
+
+	private void convertLinkToTextFragments(Fragment linkFragment)
+	{
+		addFragment(new TextFragment(String.valueOf(ParsingParameters.LINK_START_SIGN)));
+		for (Fragment fragment : ((LinkFragment) linkFragment).getFragments())
+		{
+			addFragment(fragment);
+		}
 	}
 
 	private LinkFragment makeLinkFragmentFromURL(String urlPrefix, String url)
@@ -379,13 +464,38 @@ public class FragmentParser
 	}
 
 	/**
+	 * @return false if the parentheses are not balanced
+	 */
+	private boolean walkTheURL()
+	{
+		int openedParentheses = 0;
+		char[] validURLChars = parsingParameters.getValidURLChars();
+		while (StringWalker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
+		{
+			if (walker.current() == ParsingParameters.URL_START_SIGN)
+			{
+				openedParentheses++;
+			}
+			if (walker.current() == ParsingParameters.URL_END_SIGN)
+			{
+				if (openedParentheses == 0)
+					return true; // End of URL
+
+				openedParentheses--;
+			}
+			outputString.append(walker.current());
+			walker.forward();
+		}
+		return false;
+	}
+
+	/**
 	 * If we have things remaining in the stack, these are unterminated fragments, we just dump them out literally
 	 * (ie. fragment signs were inactive).
 	 */
 	private void popStack()
 	{
-		addOutputToCurrentFragment();
-		RestoreFragmentVisitor fragmentRestore = new RestoreFragmentVisitor();
+		addOutputStringToCurrentFragment();
 		while (stack.size() > 0)
 		{
 			Fragment fragment = stack.pollLast();

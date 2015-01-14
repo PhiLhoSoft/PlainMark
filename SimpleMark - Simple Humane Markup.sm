@@ -30,8 +30,9 @@ In HTML, they are rendered respectively with the `strong`, `em` (emphasis), `del
 The markup uses respectively star `*`, underscore `_`, dash `-` and backtick `~`` surrounding the fragment.
 There can be no space after the initial sign, and no space before the ending sign.
 There can be no letter or digit before the initial sign, or after the ending one.
+Empty fragments like ** are kept literally.
 
-So `*bold*` and `*this is bold*` are valid markup, seen as *bold* and *this is bold*. But x*y and x * y remain literal.
+So `*bold*`, `this *is bold* too` and `*20 %*` are valid markup, seen as *bold*, this *is bold* too and *20 %*. But x*y and x * y remain literal.
 `"_This is a citation_"` is also valid markup (shown as "_This is a citation_"), but CONST_NAME is kept as is.
 `-striked through-` is shown as -striked through-, but in-line or a - b are kept as is.
 Code fragments can be shown with a fixed font (`code` tag in HTML) by surrounding them with backticks: `~`int x = 0;~`` will show as `int x = 0;`.
@@ -54,13 +55,21 @@ because you cannot have a new bold style inside a fragment that is already bold,
 A link can be made explicitly by wrapping the link text in brackets `[]`, followed by the link itself in parentheses `()`.
 Example: `[A _well known_ destination](http://www.google.com)` or `[*Popular* programming site](https://github.com)` or `[Relative -to *this* site- link](../foo/bar.html)` become:
 [A _well known_ destination](http://www.google.com) and [*Popular* programming site](https://github.com)  or [Relative -to *this* site- link](../foo/bar.html).
-The link text can have markup signs in it.
-Raw (unescaped) `[]` and `()` characters are allowed in the link text and the URL if they are balanced (opening braces are followed by the same number of closing braces).
+The link text can have markup signs in it, and balanced (or escaped) square brackets `[]` are allowed too.
+The URL can have balanced parentheses `()` in it.
 If an explicit link is inside the link text of an explicit link, the external one is not rendered as link.
+
+Characters accepted raw in a link are:
+		`A-Z` `a-z` `0-9` `-` `.` `_` `~~` (unreserved)
+		`:` `/` `?` `#` `[` `]` `@` (reserved, gen-delims)
+		`!` `$` `&` `\`` `(` `)` `*` `+` `,` `;` `=` (reserved, sub-delims)
+		`%` (escape)
+
 
 ### URL autolinking
 
 URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
+Parentheses in the URL are accepted if they are balanced, otherwise escape them: `%28` for `(`, `%29` for `)`.
 
 Markup signs are ignored while parsing an URL.
 The link text will be the URL without the schema (to be shorter). If the URL is longer than a predefined (ajustable) length, it will be shortened with ellipsis.
@@ -136,7 +145,7 @@ becomes:
 
 ## Code blocks
 
-Like in GitHub, a series of three backticks `~`~`~`` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~`~`~`` is met.
+Like in GitHub, a series of three backticks `~```` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~```` is met.
 Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).
 The code block signs *must* start on the first column.
 An unterminated code block goes down to the end of the text.
@@ -183,8 +192,9 @@ Blocks extends over one or more consecutive lines. They change the style of the 
 | No ~`~_markup~_ inside code~` | No `_markup_ inside code` |
 | This is ~*strong and ~_emphasized~_~* text | This is *strong and _emphasized_* text |
 
-Opening signs must have a non-alphanumerical character before and an alphanumerical after them.
-Closing signs must have an alphanumerical character before and a non-alphanumerical after them.
+Opening signs must have no letter or digit before them and no space after them
+Closing signs must have no space before them and no letter or digit before them.
+Empty fragments like ** are kept literally.
 
 No-nonsense rules
 A formula: x*x-y
@@ -192,9 +202,12 @@ Same formula: x * x - y
 A constant: ESCAPE_SIGN
 
 URLs starting with http://, https://, ftp:// or ftps:// are automatically converted to links. Long URLs are shortened with ellipsis.
+Explicit URLs can be made like: ~[link text](valid_url). This allows to use other URL schemas and relative links.
 
-| http:// stackoverflow.com | http://stackoverflow.com |
-| http:// stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages | http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages |
+| `http://stackoverflow.com` | http://stackoverflow.com |
+| `http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages` | http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages |
+| `[Link text](http://url.com/example/)` | [Link text](http://url.com/example/) |
+| `[Link [4] text _with *markup*_](relative/url/example/?foo=(5)#anchor)` | [Link [4] text _with *markup*_](relative/url/example/?foo=(5)#anchor) |
 
 ### Block markup
 
@@ -252,11 +265,11 @@ Code blocks are different: they must start on first column and must be alone on 
 ||
 
 ||
-~`~`~`
+~```
 Code block
 Where ~*markup~* is ignored
     But _indentation_ is preserved
-~`~`~`
+~```
 |
 ```
 Code block
@@ -265,16 +278,18 @@ Where *markup* is ignored
 ```
 |||
 
+Markup signs can be escaped with the tilde ~ sign. A tilde preceding a non-markup sign is kept literally.
+
 ## The nitty-gritty details
 
 As said, line breaks are preserved (in HTML, they render as `<br>` tags).
 Two consecutive line breaks before a non-block line result in a paragraph (`<p>` tag in HTML).
-
-You can deactivate a valid markup sign by preceding it with a tilde `~~` character. If the tilde ~ precedes a non-markup sign, it is kept literal.
 
 Unterminated fragment markup are ignored, rendered literally (exception for code fragment, for technical reasons).
 Nested fragments must terminate in reverse order of their opening, otherwise one sign will be deactivated:
 
 | This is `*_strong emphasized*_` text. | This is *_strong emphasized*_ text. |
 
+Square brackets in the link text of explicit links are accepted if they are balanced or escaped.
+Parentheses in the URLs are accepted if they are balanced, otherwise escape them: `%28` for `(`, `%29` for `)`.
 
