@@ -4,9 +4,6 @@
 The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
 It aims more at writing short comments than writing big, complex documents. For the latter, something like [CommonMark](http://commonmark.org/) is better suited.
 
-Note: I initially named this project SimpleMark, but a search shown at least another project of same name, with slightly different scope, but yet I prefered to avoid any collision...
-So I chose a synonym. I elected "plain", in the sense of "characterized by simplicity: not complicated", according to Merriam-Webster.
-
 Newline characters do a line break in the rendering, equivalent to the `br` HTML tag.
 Two consecutive newlines (an empty line) before a non-block line create a new paragraph, like the `p` tag in HTML.
 

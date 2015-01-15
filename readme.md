@@ -1,13 +1,16 @@
-SimpleMark: a Simple Humane Markup
+PlainMark: a Simple Humane Markup
 ==================================
 
 Yet another Markdown-style parser, written in Java (might do implementations in Dart and Ceylon, as exercises).
 
-See "SimpleMark - Simple Humane Markup.sm" explaining in detail the ideas behind this project. Of course, it uses the SimpleMark markup as a kind of real-world self-test...
+See [PlainMark - Simple Humane Markup.txt](PlainMark - Simple Humane Markup.txt) file explaining in detail the ideas behind this project. Of course, it uses the PlainMark markup as a kind of real-world self-test... If you prefer, you can read the [PlainMark - Simple Humane Markup.html](output/PlainMark - Simple Humane Markup.html) file generated from the previous file.
 
-SimpleMark is a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
+PlainMark is a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
 
-It is closer to the simplified version used in [Google+](http://webapps.stackexchange.com/questions/23078/what-are-all-the-formatting-options-for-a-google-post) (newlines mark line breaks, simplified bold / italic marks), [GitHub](https://help.github.com/articles/markdown-basics/) ([aka. GitHub Flavored Markdown](https://help.github.com/articles/github-flavored-markdown/), blocks of code) or [Stackoverflow](http://stackoverflow.com/editing-help) than to the original spec.<br>
+Note: I initially named this project SimpleMark, but a search shown at least another project of same name, with slightly different scope, but yet I prefered to avoid any collision...
+So I chose a synonym. I elected "plain", in the sense of "characterized by simplicity: not complicated", according to Merriam-Webster.
+
+PlainMark is closer to the simplified version used in [Google+](http://webapps.stackexchange.com/questions/23078/what-are-all-the-formatting-options-for-a-google-post) (newlines mark line breaks, simplified bold / italic marks), [GitHub](https://help.github.com/articles/markdown-basics/) ([aka. GitHub Flavored Markdown](https://help.github.com/articles/github-flavored-markdown/), blocks of code) or [Stackoverflow](http://stackoverflow.com/editing-help) than to the original spec.<br>
 It aims more at writing short comments than writing big, complex documents. For the latter, something like [CommonMark](http://commonmark.org/) is better suited.
 
 One of the main departure from the original spec is that the newline character does a line break. No mandatory empty line nonsense, that confuse so much users and often result in mangled messages. Text area in browsers and in modern editors automatically wrap long lines, so auto-join of consecutive lines is an outdated feature.<br>
