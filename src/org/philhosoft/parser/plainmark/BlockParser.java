@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.Block;

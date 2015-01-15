@@ -1,0 +1,350 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<title>PlainMark - Simple Humane Markup</title>
+<style>
+.mark
+{
+	font-size: 1.1rem;
+	line-height: 1.4rem;
+}
+
+.mark p:first-child
+{
+	margin-top: 0;
+}
+.mark p:last-child
+{
+	margin-bottom: 0;
+}
+.mark code
+{
+	border: none;
+	padding: 0;
+	color: #375;
+	background-color: rgba(200,200,200,0.3);
+    white-space: pre-wrap;
+}
+.mark a
+{
+	color: #08C;
+	text-decoration: none;
+}
+.mark a, .mark a:visited, .mark a:hover
+{
+	color: #00A;
+}
+.mark pre
+{
+    background-color: #F5F5F5;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px 4px 4px 4px;
+    font-size: 1rem;
+    line-height: 1.05rem;
+    margin: 0 0 8px 0;
+    padding: 8px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.mark pre > code
+{
+	border: none;
+	padding: 0;
+	color: #375;
+	background-color: inherit;
+}
+.mark a
+{
+	font-size: 95%;
+}
+.mark h1
+{
+	font-size: 120%;
+	line-height: 120%;
+}
+.mark h2
+{
+	font-size: 110%;
+	line-height: 110%;
+}
+.mark h3
+{
+	font-size: 100%;
+	line-height: 100%;
+	font-style: italic;
+}
+.mark h1:first-child, .mark h2:first-child, .mark h3:first-child
+{
+	margin-top: 0;
+}
+.mark li
+{
+	line-height: 100%;
+}
+
+table
+{
+	border-spacing: 8px;
+}
+td
+{
+	padding: 8px;
+}
+td:first-child
+{
+	border: 1px solid #CCC;
+	background-color: #EEE;
+}
+</style>
+<body>
+<div class='mark'>
+<h1>PlainMark:<br>
+a Simple Humane Markup</h1>
+<p>The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.<br>
+It aims more at writing short comments than writing big, complex documents. For the latter, something like <a href='http://commonmark.org/'>CommonMark</a> is better suited.</p>
+<p>Note: I initially named this project SimpleMark, but a search shown at least another project of same name, with slightly different scope, but yet I prefered to avoid any collision...<br>
+So I chose a synonym. I elected "plain", in the sense of "characterized by simplicity: not complicated", according to Merriam-Webster.</p>
+<p>Newline characters do a line break in the rendering, equivalent to the <code>br</code> HTML tag.<br>
+Two consecutive newlines (an empty line) before a non-block line create a new paragraph, like the <code>p</code> tag in HTML.</p>
+<p>The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).<br>
+These special characters can loose their meaning in some context, and can always be escaped with the tilde <code>~</code> sign preceding them.<br>
+If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.</p>
+<p>Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped.</p>
+<p>Fragment markup characters loose their meaning if surrounded by spaces or by letters or digits.<br>
+They go by pairs, correctly nested. A single markup sign (without a closing one before the end of the line) looses its meaning (is kept literal).<br>
+Currently, there is an exception for an unterminated code fragment: it runs to the end of the line (limitation of the parser).</p>
+<h3>Limitations</h3>
+<p>There is no support for blockquotes (I prefer to use double quotes surrounding an italicized citation), tables or images. No HTML markup can be used, <code>&amp;</code> ,<code>&lt;</code> and <code>&gt;</code> signs are escaped (kept literal) in an HTML rendering. HTML entities are not supported (might be, later).</p>
+<h2>Styles</h2>
+<p>Fragments of text can be bold, italic, stroked through or with fixed font.<br>
+In HTML, they are rendered respectively with the <code>strong</code>, <code>em</code> (emphasis), <code>del</code> (deleted) and <code>code</code> tags.</p>
+<p>The markup uses respectively star <code>*</code>, underscore <code>_</code>, dash <code>-</code> and backtick <code>`</code> surrounding the fragment.<br>
+There can be no space after the initial sign, and no space before the ending sign.<br>
+There can be no letter or digit before the initial sign, or after the ending one.<br>
+Empty fragments like ** are kept literally.</p>
+<p>So <code>*bold*</code>, <code>this *is bold* too</code> and <code>*20 %*</code> are valid markup, seen as <strong>bold</strong>, this <strong>is bold</strong> too and <strong>20 %</strong>. But x*y and x * y remain literal.<br>
+<code>"_This is a citation_"</code> is also valid markup (shown as "<em>This is a citation</em>"), but CONST_NAME is kept as is.<br>
+<code>-striked through-</code> is shown as <del>striked through</del>, but in-line or a - b are kept as is.<br>
+Code fragments can be shown with a fixed font (<code>code</code> tag in HTML) by surrounding them with backticks: <code>`int x = 0;`</code> will show as <code>int x = 0;</code>.<br>
+Inside a code fragment, markup characters (except tilde) loose their meaning.</p>
+<p>Fragment styling can be nested:<br>
+This sentence has <code>_italic parts *and bold* too_</code>.<br>
+becomes:<br>
+This sentence has <em>italic parts <strong>and bold</strong> too</em>.</p>
+<p>The ending signs must be in reverse order of the starting ones:<br>
+This is <code>*_strong emphasized*_</code> text.<br>
+will be displayed as:<br>
+This is *<em>strong emphasized*</em> text.</p>
+<h2>Links</h2>
+<p>A link can be made explicitly by wrapping the link text in brackets <code>[]</code>, followed by the link itself in parentheses <code>()</code>.<br>
+Example: <code>[A _well known_ destination](http://www.google.com)</code> or <code>[*Popular* programming site](https://github.com)</code> or <code>[Relative -to *this* site- link](../foo/bar.html)</code> become:<br>
+<a href='http://www.google.com'>A <em>well known</em> destination</a> and <a href='https://github.com'><strong>Popular</strong> programming site</a>  or <a href='../foo/bar.html'>Relative <del>to <strong>this</strong> site</del> link</a>.<br>
+The link text can have markup signs in it, and balanced (or escaped) square brackets <code>[]</code> are allowed too.<br>
+The URL can have balanced parentheses <code>()</code> in it.<br>
+If an explicit link is inside the link text of an explicit link, the external one is not rendered as link.</p>
+<p>Characters accepted raw in a link are:<br>
+<code>A-Z</code> <code>a-z</code> <code>0-9</code> <code>-</code> <code>.</code> <code>_</code> <code>~</code> (unreserved)<br>
+<code>:</code> <code>/</code> <code>?</code> <code>#</code> <code>[</code> <code>]</code> <code>@</code> (reserved, gen-delims)<br>
+<code>!</code> <code>$</code> <code>&amp;</code> <code>\</code>` <code>(</code> <code>)</code> <code>*</code> <code>+</code> <code>,</code> <code>;</code> <code>=</code> (reserved, sub-delims)<br>
+<code>%</code> (escape)</p>
+<h3>URL autolinking</h3>
+<p>URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.<br>
+The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).<br>
+Parentheses in the URL are accepted if they are balanced, otherwise escape them: <code>%28</code> for <code>(</code>, <code>%29</code> for <code>)</code>.</p>
+<p>Markup signs are ignored while parsing an URL.<br>
+The link text will be the URL without the schema (to be shorter). If the URL is longer than a predefined (ajustable) length, it will be shortened with ellipsis.</p>
+<p>Example: <code>http://daringfireball.net/projects/markdown/dingus</code> becomes <a href='http://daringfireball.net/projects/markdown/dingus'>daringfireball.net/projects/ma…</a></p>
+<h2>Paragraph</h2>
+<p>A line break is rendered by a simple line break, ie. in HTML a <code>br</code> tag.<br>
+An empty line (or several consecutive ones) separates paragraphs, rendered in HTML with a <code>p</code> tag.</p>
+<h2>Titles</h2>
+<p>SimpleMark has only three levels of title.<br>
+In HTML rendering, they are not necessarily mapped to <code>h1</code> to <code>h3</code>. They might be mapped to <code>h3</code> to <code>h5</code>, for example, or even be just <code>div</code> s with their own classes.<br>
+These levels are denoted as a series of one to three sharp signs <code>#</code> at the start of the line, followed by a space. One <code>#</code> denotes the highest level, three is for the lowest one.<br>
+If two consecutive lines are titles with the same level, it makes a multi-line title (ie. with a line break inside).<br>
+Titles should be rendered with a bolder font, with size bigger than main text, and some vertical space before and after the line.</p>
+<p>Example:<br>
+<code>## Second level title</code></p>
+<h2>Lists</h2>
+<p>Unordered lists are made with lines starting with a dash <code>-</code> or a plus <code>+</code> or a star <code>*</code>, followed by a space.<br>
+Ordered lists  are made with lines starting with numbers (several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.<br>
+No nesting is handled. A list stops with the first non-list line, so there can be two distinct consecutive lists if separated by an empty line.<br>
+The list sign of unordered lists isn't relevant, they render to the same kind of item.</p>
+<p>* Item<br>
+* Other item<br>
+* Last item<br>
+becomes:</p>
+<ul>
+<li>Item</li>
+<li>Other item</li>
+<li>Last item</li>
+</ul>
+<p>- Item<br>
+- Other item<br>
+- Last item<br>
+becomes:</p>
+<ul>
+<li>Item</li>
+<li>Other item</li>
+<li>Last item</li>
+</ul>
+<p>+ Item<br>
++ Other item<br>
++ Last item<br>
+becomes:</p>
+<ul>
+<li>Item</li>
+<li>Other item</li>
+<li>Last item</li>
+</ul>
+<p>* Item<br>
++ Other item<br>
+- Last item<br>
+becomes:</p>
+<ul>
+<li>Item</li>
+<li>Other item</li>
+<li>Last item</li>
+</ul>
+<p>1. Item 1<br>
+1. Item 2<br>
+10. Item n<br>
+becomes:</p>
+<ol>
+<li>Item 1</li>
+<li>Item 2</li>
+<li>Item n</li>
+</ol>
+<h2>Code blocks</h2>
+<p>Like in GitHub, a series of three backticks <code>```</code> on their own line renders all the following lines as code (in a <code>pre</code> block in HTML, with <code>code</code> style), until another line with <code>```</code> is met.<br>
+Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).<br>
+The code block signs <strong>must</strong> start on the first column.<br>
+An unterminated code block goes down to the end of the text.</p>
+<p>Example:</p>
+<pre><code>    BlockType.Visitor&lt;VisitorContext&gt; blockStartVisitor = new HTMLBlockStartVisitor()
+    {
+      @Override
+      public void visitDocument(VisitorContext context)
+      {
+        context.append("&lt;div class='mark'&gt;");
+      }
+    };
+</code></pre>
+
+<h1>Parsing rules / implementation details</h1>
+<p>The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.</p>
+<p>When an URL is parsed (with another autonomous parser), special chars are ignored, until the end of the URL is detected. Details of the URL parsing is to follow.</p>
+<p>Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.</p>
+<p>Markup signs are:</p>
+<ul>
+<li>For fragments: ~ * _ - ` [ ] ( )</li>
+<li>For blocks (at start of line): # * - + digit (followed by dot) ` (followed by two others)</li>
+</ul>
+<h1>How to use (User Manual)</h1>
+<p>Marked text is just plain text where line breaks are preserved, and some characters, in a given context, change the style of the rendered text.<br>
+There are two categories of markup signs: fragment markup and block markup.<br>
+Fragments are within a line, they change the style of a portion of the line.<br>
+Blocks extends over one or more consecutive lines. They change the style of the whole line(s).</p>
+<h3>Fragment markup</h3>
+<table><tr><td>This is *strong* text</td><td>This is <strong>strong</strong> text</td></tr>
+<tr><td>This is _emphasized_ text</td><td>This is <em>emphasized</em> text</td></tr>
+<tr><td>This is -deleted- text</td><td>This is <del>deleted</del> text</td></tr>
+<tr><td>This is `code` text</td><td>This is <code>code</code> text</td></tr>
+<tr><td>No `_markup_ inside code`</td><td>No <code>_markup_ inside code</code></td></tr>
+<tr><td>This is *strong and _emphasized_* text</td><td>This is <strong>strong and <em>emphasized</em></strong> text</td></tr></table>
+<p>Opening signs must have no letter or digit before them and no space after them<br>
+Closing signs must have no space before them and no letter or digit before them.<br>
+Empty fragments like ** are kept literally.</p>
+<p>Examples of inactive markup signs:<br>
+No-nonsense rules<br>
+A formula: x*x-y<br>
+Same formula: x * x - y<br>
+A constant: ESCAPE_SIGN</p>
+<p>URLs starting with http://, https://, ftp:// or ftps:// are automatically converted to links. Long URLs are shortened with ellipsis.<br>
+Explicit URLs can be made like: [link text](valid_url). This allows to use other URL schemas and relative links.</p>
+<table><tr><td><code>http://stackoverflow.com</code></td><td><a href='http://stackoverflow.com'>stackoverflow.com</a></td></tr>
+<tr><td><code>http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages</code></td><td><a href='http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages'>stackoverflow.com/questions/65…</a></td></tr>
+<tr><td><code>[Link text](http://url.com/example/)</code></td><td><a href='http://url.com/example/'>Link text</a></td></tr>
+<tr><td><code>[Link [4] text _with *markup*_](relative/url/example/?foo=(5)#anchor)</code></td><td><a href='relative/url/example/?foo=(5)#anchor'>Link [4] text <em>with <strong>markup</strong></em></a></td></tr></table>
+<h3>Block markup</h3>
+<p>These signs are always at the start of a line, regardless of indentation. They must always be followed by at least one space.<br>
+Code blocks are different: they must start on first column and must be alone on their line.</p>
+<table><tr><td>
+# Title level 1<br>
+</td><td>
+<h1>Title level 1</h1>
+</td></tr>
+<tr><td>
+## Title level 2<br>
+</td><td>
+<h2>Title level 2</h2>
+</td></tr>
+<tr><td>
+### Title level 3<br>
+</td><td>
+<h3>Title level 3</h3>
+</td></tr>
+<tr><td>
+- Unordered list item 1<br>
+- Unordered list item 2<br>
+</td><td>
+<ul>
+<li>Unordered list item 1</li>
+<li>Unordered list item 2</li>
+</ul>
+</td></tr>
+<tr><td>
++ Unordered list item 1<br>
++ Unordered list item 2<br>
+</td><td>
+<ul>
+<li>Unordered list item 1</li>
+<li>Unordered list item 2</li>
+</ul>
+</td></tr>
+<tr><td>
+* Unordered list item 1<br>
+* Unordered list item 2<br>
+</td><td>
+<ul>
+<li>Unordered list item 1</li>
+<li>Unordered list item 2</li>
+</ul>
+</td></tr>
+<tr><td>
+1. Ordered list item 1<br>
+1. Ordered list item 2<br>
+</td><td>
+<ol>
+<li>Ordered list item 1</li>
+<li>Ordered list item 2</li>
+</ol>
+</td></tr>
+<tr><td>
+```<br>
+Code block<br>
+Where *markup* is ignored<br>
+But <em>indentation</em> is preserved<br>
+```<br>
+</td><td>
+<pre><code>Code block
+Where *markup* is ignored
+    But _indentation_ is preserved
+</code></pre>
+
+</td></tr></table>
+<p>Markup signs can be escaped with the tilde ~ sign. A tilde preceding a non-markup sign is kept literally.</p>
+<h2>The nitty-gritty details</h2>
+<p>As said, line breaks are preserved (in HTML, they render as <code>&lt;br&gt;</code> tags).<br>
+Two consecutive line breaks before a non-block line result in a paragraph (<code>&lt;p&gt;</code> tag in HTML).</p>
+<p>Unterminated fragment markup are ignored, rendered literally (exception for code fragment, for technical reasons).<br>
+Nested fragments must terminate in reverse order of their opening, otherwise one sign will be deactivated:</p>
+<table><tr><td>This is *_strong emphasized*_ text.</td><td>This is *<em>strong emphasized*</em> text.</td></tr></table>
+<p>Square brackets in the link text of explicit links are accepted if they are balanced or escaped.<br>
+Parentheses in the URLs are accepted if they are balanced, otherwise escape them: <code>%28</code> for <code>(</code>, <code>%29</code> for <code>)</code>.</p>
+
+</div>
+</body>
+</html>

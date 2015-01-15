@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,6 +11,7 @@ import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.TypedBlock;
 import org.philhosoft.parser.StringWalker;
+import org.philhosoft.parser.plainmark.BlockParser;
 
 
 public class TestBlockParser

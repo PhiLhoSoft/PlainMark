@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import java.util.HashMap;
 import java.util.Map;

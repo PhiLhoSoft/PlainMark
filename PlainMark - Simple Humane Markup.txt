@@ -1,8 +1,11 @@
-# SimpleMark:
+# PlainMark:
 # a Simple Humane Markup
 
 The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.
 It aims more at writing short comments than writing big, complex documents. For the latter, something like [CommonMark](http://commonmark.org/) is better suited.
+
+Note: I initially named this project SimpleMark, but a search shown at least another project of same name, with slightly different scope, but yet I prefered to avoid any collision...
+So I chose a synonym. I elected "plain", in the sense of "characterized by simplicity: not complicated", according to Merriam-Webster.
 
 Newline characters do a line break in the rendering, equivalent to the `br` HTML tag.
 Two consecutive newlines (an empty line) before a non-block line create a new paragraph, like the `p` tag in HTML.
@@ -43,11 +46,10 @@ This sentence has `_italic parts *and bold* too_`.
 becomes:
 This sentence has _italic parts *and bold* too_.
 
-The ending signs must be in reverse order of the starting one:
+The ending signs must be in reverse order of the starting ones:
 This is `*_strong emphasized*_` text.
 will be displayed as:
 This is *_strong emphasized*_ text.
-because you cannot have a new bold style inside a fragment that is already bold, and the second star doesn't end the first one because a new style has been started and not ended yet.
 
 
 ## Links
@@ -68,7 +70,8 @@ Characters accepted raw in a link are:
 
 ### URL autolinking
 
-URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. The URL conversion stops on some characters, that should be escaped if they are part of the URL. Or use the explicit form. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
+URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.
+The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
 Parentheses in the URL are accepted if they are balanced, otherwise escape them: `%28` for `(`, `%29` for `)`.
 
 Markup signs are ignored while parsing an URL.
@@ -145,7 +148,7 @@ becomes:
 
 ## Code blocks
 
-Like in GitHub, a series of three backticks `~```` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~```` is met.
+Like in GitHub, a series of three backticks `~`~`~`` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~`~`~`` is met.
 Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).
 The code block signs *must* start on the first column.
 An unterminated code block goes down to the end of the text.
@@ -176,7 +179,7 @@ Markup signs are:
 - For blocks (at start of line): # * - + digit (followed by dot) ` (followed by two others)
 
 
-# How to use
+# How to use (User Manual)
 
 Marked text is just plain text where line breaks are preserved, and some characters, in a given context, change the style of the rendered text.
 There are two categories of markup signs: fragment markup and block markup.
@@ -196,6 +199,7 @@ Opening signs must have no letter or digit before them and no space after them
 Closing signs must have no space before them and no letter or digit before them.
 Empty fragments like ** are kept literally.
 
+Examples of inactive markup signs:
 No-nonsense rules
 A formula: x*x-y
 Same formula: x * x - y
@@ -288,7 +292,7 @@ Two consecutive line breaks before a non-block line result in a paragraph (`<p>`
 Unterminated fragment markup are ignored, rendered literally (exception for code fragment, for technical reasons).
 Nested fragments must terminate in reverse order of their opening, otherwise one sign will be deactivated:
 
-| This is `*_strong emphasized*_` text. | This is *_strong emphasized*_ text. |
+| This is ~*~_strong emphasized*_ text. | This is *_strong emphasized*_ text. |
 
 Square brackets in the link text of explicit links are accepted if they are balanced or escaped.
 Parentheses in the URLs are accepted if they are balanced, otherwise escape them: `%28` for `(`, `%29` for `)`.

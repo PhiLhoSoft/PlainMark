@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,6 +11,8 @@ import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
 import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.parser.StringWalker;
+import org.philhosoft.parser.plainmark.FragmentParser;
+import org.philhosoft.parser.plainmark.ParsingParameters;
 
 
 public class TestFragmentParser

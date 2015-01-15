@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
@@ -151,20 +151,27 @@ public class FragmentParser
 		}
 		if (!processed)
 		{
-			if (walker.current() == ParsingParameters.LINK_START_SIGN)
-			{
-				handleLinkStart();
-				processed = true;
-			}
-			else if (walker.current() == ParsingParameters.LINK_END_SIGN)
-			{
-				processed = handleLinkEnd();
-			}
+			processed = handleLinkMarkup();
 		}
 		if (!processed)
 		{
 			appendCurrentAndForward();
 		}
+	}
+
+	private boolean handleLinkMarkup()
+	{
+		if (walker.current() == ParsingParameters.LINK_START_SIGN)
+		{
+			handleLinkStart();
+			return true;
+		}
+		if (walker.current() == ParsingParameters.LINK_END_SIGN)
+		{
+			return handleLinkEnd();
+		}
+		
+		return false;
 	}
 
 	/**
@@ -204,14 +211,10 @@ public class FragmentParser
 
 	private boolean handleLinkEnd()
 	{
-		if (walker.next() == ParsingParameters.URL_START_SIGN)
-		{
-			if (handleURLStart())
-				return true;
-		}
+		if (walker.next() == ParsingParameters.URL_START_SIGN && handleURLStart())
+			return true;
 
 		// Not a link end
-
 		// Find if we have a link in the stack. If so, we deactivate it: we found nested brackets.
 		Fragment currentFragment = stack.peek();
 		if (currentFragment instanceof LinkFragment)
@@ -219,7 +222,6 @@ public class FragmentParser
 			addOutputStringToCurrentFragment();
 			stack.pop();
 			convertLinkTextToTextFragments(currentFragment);
-			return false;
 		}
 
 		return false;

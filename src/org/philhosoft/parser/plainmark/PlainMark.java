@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.MarkupVisitor;
@@ -9,12 +9,12 @@ import org.philhosoft.formattedtext.format.VisitorContext;
 import org.philhosoft.parser.StringWalker;
 
 
-public class SimpleMark
+public class PlainMark
 {
 	private ParsingParameters parsingParameters = new ParsingParameters();
 	private MarkupVisitor<VisitorContext> visitor;
 
-	public SimpleMark()
+	public PlainMark()
 	{
 	}
 
@@ -23,7 +23,7 @@ public class SimpleMark
 	 */
 	public static String convertToHTML(String markupText)
 	{
-		return new SimpleMark().setVisitor(new HTMLVisitor()).convert(markupText);
+		return new PlainMark().setVisitor(new HTMLVisitor()).convert(markupText);
 	}
 
 	/**
@@ -31,15 +31,15 @@ public class SimpleMark
 	 */
 	public static String convertToPlainText(String markupText)
 	{
-		return new SimpleMark().setVisitor(new PlainTextVisitor()).convert(markupText);
+		return new PlainMark().setVisitor(new PlainTextVisitor()).convert(markupText);
 	}
 
-	public SimpleMark setVisitor(MarkupVisitor<VisitorContext> visitor)
+	public PlainMark setVisitor(MarkupVisitor<VisitorContext> visitor)
 	{
 		this.visitor = visitor;
 		return this;
 	}
-	public SimpleMark setParsingParameters(ParsingParameters parsingParameters)
+	public PlainMark setParsingParameters(ParsingParameters parsingParameters)
 	{
 		this.parsingParameters = parsingParameters;
 		return this;

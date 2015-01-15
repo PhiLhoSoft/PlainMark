@@ -1,4 +1,4 @@
-package org.philhosoft.parser.simplemark;
+package org.philhosoft.parser.plainmark;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,10 +22,10 @@ import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.formattedtext.format.VisitorContext;
 
 
-public class TestSimpleMark
+public class TestPlainMark
 {
-	public static final String TEST_FILE = "SimpleMark - Simple Humane Markup";
-	public static final String CSS_FILE = "SimpleMark.css";
+	public static final String TEST_FILE = "PlainMark - Simple Humane Markup";
+	public static final String CSS_FILE = "PlainMark.css";
 	public static final String OUTPUT_PATH = "output";
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -40,7 +40,7 @@ public class TestSimpleMark
 	@Test
 	public void testConvertSpec() throws IOException, URISyntaxException
 	{
-		Path path = Paths.get(TEST_FILE + ".sm");
+		Path path = Paths.get(TEST_FILE + ".txt");
 		String markedText = readFile(path);
 
 		String css = readFile(Paths.get(CSS_FILE));
@@ -89,7 +89,7 @@ public class TestSimpleMark
 		};
 		visitor.setBlockVisitors(blockStartVisitor, blockEndVisitor);
 
-		SimpleMark sm = new SimpleMark().setVisitor(visitor);
+		PlainMark sm = new PlainMark().setVisitor(visitor);
 		String generatedHTML = sm.convert(markedText);
 
 		generatedHTML = handleTables(generatedHTML);
@@ -100,7 +100,7 @@ public class TestSimpleMark
 			writer.write("<!doctype html>\n");
 			writer.write("<html>\n<head>\n");
 			writer.write("\t<meta charset='utf-8'>\n");
-			writer.write("\t<title>SimpleMark - Simple Humane Markup</title>\n");
+			writer.write("\t<title>PlainMark - Simple Humane Markup</title>\n");
 			writer.write("<style>\n");
 			writer.write(css);
 			writer.write("</style>\n");
