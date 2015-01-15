@@ -5,5 +5,6 @@ package org.philhosoft.formattedtext.ast;
  */
 public interface Block extends MarkedText
 {
+	@Override
 	void add(String text);
 }

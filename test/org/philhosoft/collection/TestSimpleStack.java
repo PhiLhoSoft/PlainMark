@@ -27,6 +27,10 @@ public class TestSimpleStack
 		catch (NoSuchElementException e)
 		{
 		}
+		assertThat(stack.peekLast()).isNull();
+		assertThat(stack.pollLast()).isNull();
+		assertThat(stack.peekAt(0)).isNull();
+		assertThat(stack.pollAt(0)).isNull();
 
 		for (String s : stack)
 		{
@@ -38,6 +42,8 @@ public class TestSimpleStack
 		assertThat(stack).isNotEmpty();
 		assertThat(stack.size()).isEqualTo(1);
 		assertThat(stack.peek()).isEqualTo("Foo");
+		assertThat(stack.peekLast()).isEqualTo("Foo");
+		assertThat(stack.peekAt(0)).isEqualTo("Foo");
 
 		for (String s : stack)
 		{
@@ -70,6 +76,12 @@ public class TestSimpleStack
 			}
 			i++;
 		}
+		assertThat(stack.peekLast()).isEqualTo("Foo");
+		assertThat(stack.peekAt(2)).isEqualTo("Foo");
+		assertThat(stack.peekAt(1)).isEqualTo("Bar");
+		assertThat(stack.peekAt(0)).isEqualTo("Doh");
+		assertThat(stack.peekAt(3)).isNull();
+		assertThat(stack.peekAt(-1)).isNull();
 
 		String pop1 = stack.pop();
 
@@ -104,7 +116,12 @@ public class TestSimpleStack
 		assertThat(stack).isEmpty();
 		assertThat(stack.size()).isEqualTo(0);
 		assertThat(stack.peek()).isNull();
+	}
 
+	@Test
+	public void testPollLast()
+	{
+		SimpleStack<String> stack = new SimpleStack<String>();
 		stack.push("Bar B");
 		stack.push("Middle");
 		stack.push("Doh D");
@@ -125,5 +142,28 @@ public class TestSimpleStack
 
 		assertThat(stack).isEmpty();
 		assertThat(stack.size()).isEqualTo(0);
+	}
+
+	@Test
+	public void testPeekPollAt()
+	{
+		SimpleStack<String> stack = new SimpleStack<String>();
+		stack.push("Shi");
+		stack.push("San");
+		stack.push("Ni");
+		stack.push("Ichi");
+
+		assertThat(stack.peekAt(3)).isEqualTo("Shi");
+		assertThat(stack.pollAt(3)).isEqualTo("Shi");
+		assertThat(stack.size()).isEqualTo(3);
+		assertThat(stack.peekAt(2)).isEqualTo("San");
+		assertThat(stack.pollAt(2)).isEqualTo("San");
+		assertThat(stack.size()).isEqualTo(2);
+		assertThat(stack.peekAt(0)).isEqualTo("Ichi");
+		assertThat(stack.pollAt(0)).isEqualTo("Ichi");
+		assertThat(stack.size()).isEqualTo(1);
+		assertThat(stack.peekAt(0)).isEqualTo("Ni");
+		assertThat(stack.pollAt(0)).isEqualTo("Ni");
+		assertThat(stack).isEmpty();
 	}
 }

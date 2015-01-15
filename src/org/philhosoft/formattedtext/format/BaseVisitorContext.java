@@ -1,8 +1,6 @@
 package org.philhosoft.formattedtext.format;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
+import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.TypedBlock;
@@ -48,7 +46,7 @@ public abstract class BaseVisitorContext implements VisitorContext
 		}
 	}
 
-	protected Deque<FirstLast> firstLastList = new ArrayDeque<FirstLast>();
+	protected SimpleStack<FirstLast> firstLastList = new SimpleStack<FirstLast>();
 
 	@Override
 	public void push(Block parentBlock, boolean first, boolean last)

@@ -675,6 +675,36 @@ public class TestFragmentParser
 	}
 
 	@Test
+	public void testURL_explicit_decoratedWithUnterminatedDecoration()
+	{
+		StringWalker walker = new StringWalker("Emphasized link _with [Unterminated *markup](there)_");
+
+		Line expected = new Line("Emphasized link ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.EMPHASIS, "with ");
+		LinkFragment lf = new LinkFragment("Unterminated ", "there");
+		lf.add("*markup");
+		df.add(lf);
+		expected.add(df);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_decoratedWithUnterminatedDecoration2()
+	{
+		StringWalker walker = new StringWalker("Strong link *with [Unterminated *markup](there)*");
+
+		Line expected = new Line("Strong link ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "with ");
+		LinkFragment lf = new LinkFragment("Unterminated ", "there");
+		lf.add("*markup");
+		df.add(lf);
+		expected.add(df);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
 	public void testURL_explicit_withDecorations()
 	{
 		StringWalker walker = new StringWalker("[Link *bold and _italic_* text](foo/bar)");
@@ -917,8 +947,11 @@ public class TestFragmentParser
 		StringWalker walker = new StringWalker("Almost Link with [Unterminated *markup](whatever");
 
 		Line expected = new Line("Almost Link with ");
-		expected.add("[Unterminated ");
-		expected.add("*markup](whatever");
+		expected.add("[");
+		expected.add("Unterminated ");
+		expected.add("*markup");
+		expected.add("](");
+		expected.add("whatever");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}

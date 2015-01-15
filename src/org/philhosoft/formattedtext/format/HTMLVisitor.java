@@ -27,7 +27,7 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 
 	public HTMLVisitor()
 	{
-		this.tabSize = 4;
+		this(4);
 	}
 	public HTMLVisitor(int tabSize)
 	{
@@ -72,9 +72,10 @@ public class HTMLVisitor implements MarkupVisitor<VisitorContext>
 	@Override
 	public void visit(LinkFragment fragment, VisitorContext context)
 	{
-		context.append("<a href='").append(normalize(fragment.getUrl())).append("'>");
+		fragment.getDecoration().accept(fragmentStartVisitor, context);
+		context.append("href='").append(normalize(fragment.getUrl())).append("'>");
 		VisitorHelper.visitFragments(fragment.getFragments(), this, null, context);
-		context.append("</a>");
+		fragment.getDecoration().accept(fragmentEndVisitor, context);
 	}
 
 	@Override

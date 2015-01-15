@@ -19,7 +19,8 @@ public class TestPlainTextVisitor
 		document.accept(visitor, ctx);
 
 //		System.out.println(ctx.toString());
-		assertThat(ctx.asString()).isEqualTo("Start of text with emphasis inside.\n" +
+		assertThat(ctx.asString()).isEqualTo(
+				"Start of text with emphasis inside.\n" +
 				"Strong init, followed by plain text and a nice link - http://www.example.com/?a=b&c=~x~\n" +
 				"Boring plain text and emphasized text and even deleted text fixed width text.\n");
 	}
@@ -34,7 +35,8 @@ public class TestPlainTextVisitor
 		document.accept(visitor, ctx);
 
 //		System.out.println(ctx.toString());
-		assertThat(ctx.asString()).isEqualTo("This is a title\n" +
+		assertThat(ctx.asString()).isEqualTo(
+				"This is a title\n" +
 				"Line Two\n" +
 				"Item <0>\n" +
 				"Item <1>\n" +

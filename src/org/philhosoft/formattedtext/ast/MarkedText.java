@@ -1,9 +1,11 @@
 package org.philhosoft.formattedtext.ast;
 
 /**
- * Marker interface extended both by Block and by Fragment.
+ * Interface for blocks and fragments of text.
  */
 public interface MarkedText
 {
+	void add(String text);
+
 	<T> void accept(MarkupVisitor<T> visitor, T output);
 }

@@ -5,6 +5,11 @@ import org.philhosoft.formattedtext.ast.FragmentDecoration;
 public class HTMLFragmentEndVisitor implements FragmentDecoration.Visitor<VisitorContext>
 {
 	@Override
+	public void visitLink(VisitorContext context)
+	{
+		context.append("</a>");
+	}
+	@Override
 	public void visitStrong(VisitorContext context)
 	{
 		context.append("</strong>");

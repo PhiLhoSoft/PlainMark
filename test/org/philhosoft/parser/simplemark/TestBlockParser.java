@@ -406,9 +406,9 @@ public class TestBlockParser
 	{
 		StringWalker walker = new StringWalker(
 				"Plain text before\n" +
-						"~```\n" +
-						"// Comment *line*\n\n" +
-						"~```\n" +
+				"~```\n" +
+				"// Comment *line*\n\n" +
+				"~```\n" +
 				"And plain text after");
 
 		Block result = BlockParser.parse(walker);

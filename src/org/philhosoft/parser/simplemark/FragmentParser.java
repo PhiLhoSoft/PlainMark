@@ -1,8 +1,5 @@
 package org.philhosoft.parser.simplemark;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.philhosoft.collection.SimpleStack;
 import org.philhosoft.formattedtext.ast.DecoratedFragment;
 import org.philhosoft.formattedtext.ast.Fragment;
@@ -85,7 +82,7 @@ public class FragmentParser
 		walker.forward(); // Go to start of next line, if any
 
 		// We reached the end of line, see if some text remains to be processed
-		popStack();
+		popStack(stack.size() - 1, line);
 
 		return line;
 	}
@@ -209,21 +206,8 @@ public class FragmentParser
 	{
 		if (walker.next() == ParsingParameters.URL_START_SIGN)
 		{
-			// We are really in a link, if there is one in the stack
-			LinkFragment parent = findLinkInStack();
-			// Search the link up, we will have to pop out the unterminated fragments if we find them
-			// TODO
-			if (parent != null)
-			{
-				addOutputStringToCurrentFragment();
-				stack.pop();
-				walker.forward(2); // Skip ](
-				if (addURLUpToClosingParenthesis((LinkFragment) parent))
-				{
-					addFragment(parent);
-				}
+			if (handleURLStart())
 				return true;
-			}
 		}
 
 		// Not a link end
@@ -234,21 +218,49 @@ public class FragmentParser
 		{
 			addOutputStringToCurrentFragment();
 			stack.pop();
-			convertLinkToTextFragments(currentFragment);
+			convertLinkTextToTextFragments(currentFragment);
 			return false;
 		}
 
 		return false;
 	}
 
-	private LinkFragment findLinkInStack()
+	private boolean handleURLStart()
 	{
+		// We are really in a link, if there is one in the stack
+		// Search the link up, we will have to pop out the unterminated fragments if we find them
+		int depth = findLinkDepthInStack();
+		if (depth < 0)
+			return false;
+
+		LinkFragment link = (LinkFragment) stack.peekAt(depth);
+		// Remove and restore any unterminated fragment before the link
+		popStack(depth - 1, link);
+		// Pop out the link that surfaced
+		stack.pop();
+		walker.forward(2); // Skip ](
+		if (addURLUpToClosingParenthesis(link))
+		{
+			addFragment(link);
+		}
+		else
+		{
+			convertLinkTextToTextFragments(link);
+			addFragment(new TextFragment(new String(new char[] { ParsingParameters.LINK_END_SIGN, ParsingParameters.URL_START_SIGN })));
+		}
+		return true;
+	}
+
+	private int findLinkDepthInStack()
+	{
+		int depth = 0;
 		for (Fragment fragment : stack)
 		{
 			if (fragment instanceof LinkFragment)
-				return (LinkFragment) fragment;
+				return depth;
+			depth++;
 		}
-		return null;
+		return -1;
 	}
 
 	/**
@@ -266,9 +278,7 @@ public class FragmentParser
 		char previous = walker.previous();
 		char next = walker.next();
 		boolean starting = currentFragment == null || // Not in a decoration
-				(currentFragment instanceof DecoratedFragment &&
-				((DecoratedFragment) currentFragment).getDecoration() != foundDecoration) || // Different decoration
-				currentFragment instanceof LinkFragment;
+				currentFragment.getDecoration() != foundDecoration; // Different decoration
 
 		// Is this a starting sign?
 		if (starting &&
@@ -301,15 +311,11 @@ public class FragmentParser
 
 	private void handleDecorationInsideAnother(FragmentDecoration foundDecoration, Fragment parentFragment)
 	{
-		if (parentFragment instanceof DecoratedFragment)
+		if (parentFragment.getDecoration() == foundDecoration)
 		{
-			DecoratedFragment parent = (DecoratedFragment) parentFragment;
-			if (parent.getDecoration() == foundDecoration)
-			{
-				// End of the decorated part
-				handleClosingDecoration(foundDecoration, parent);
-				return;
-			}
+			// End of the decorated part
+			handleClosingDecoration(foundDecoration, (DecoratedFragment) parentFragment);
+			return;
 		}
 
 		// We start a new, different, nested decoration
@@ -428,21 +434,16 @@ public class FragmentParser
 	private boolean addURLUpToClosingParenthesis(LinkFragment parent)
 	{
 		boolean valid = walkTheURL();
-		if (!valid)
-		{
-			convertLinkToTextFragments(parent);
-			addFragment(new TextFragment(new String(new char[] { ParsingParameters.LINK_END_SIGN, ParsingParameters.URL_START_SIGN })));
-		}
-		else
+		if (valid)
 		{
 			walker.forward(); // Skip closing parenthesis
-			parent.addURL(outputString.toString());
+			parent.setURL(outputString.toString());
 			outputString.setLength(0);
 		}
 		return valid;
 	}
 
-	private void convertLinkToTextFragments(Fragment linkFragment)
+	private void convertLinkTextToTextFragments(Fragment linkFragment)
 	{
 		addFragment(new TextFragment(String.valueOf(ParsingParameters.LINK_START_SIGN)));
 		for (Fragment fragment : ((LinkFragment) linkFragment).getFragments())
@@ -492,44 +493,46 @@ public class FragmentParser
 	/**
 	 * If we have things remaining in the stack, these are unterminated fragments, we just dump them out literally
 	 * (ie. fragment signs were inactive).
+	 *
+	 * @param startingPosition  the starting position, from the head. To pop out all the stack, use stack.size() - 1.
+	 * @param targetFragment  the fragment where to add the sub-fragments
 	 */
-	private void popStack()
+	private void popStack(int startingPosition, Fragment targetFragment)
 	{
 		addOutputStringToCurrentFragment();
-		while (stack.size() > 0)
+		if (startingPosition > stack.size() - 1)
+			return;
+		while (startingPosition >= 0)
 		{
-			Fragment fragment = stack.pollLast();
-			List<Fragment> decoratedFragments = new ArrayList<Fragment>();
-			if (fragment instanceof DecoratedFragment)
+			Fragment fragment = stack.pollAt(startingPosition--);
+			restoreFragment(fragment, targetFragment);
+		}
+	}
+
+	/**
+	 * Transforms a fragment back to its initial sign and its text.
+	 */
+	private void restoreFragment(Fragment fragment, Fragment target)
+	{
+		FragmentDecoration decoration = fragment.getDecoration();
+		if (decoration == null)
+			throw new IllegalStateException("TextFragments shouldn't go in the stack");
+		decoration.accept(fragmentRestore, outputString);
+		for (Fragment subFragment : fragment.getFragments())
+		{
+			if (subFragment instanceof TextFragment)
 			{
-				((DecoratedFragment) fragment).getDecoration().accept(fragmentRestore, outputString);
-				decoratedFragments = ((DecoratedFragment) fragment).getFragments();
-			}
-			else if (fragment instanceof LinkFragment)
-			{
-				outputString.append(ParsingParameters.LINK_START_SIGN);
-				decoratedFragments = ((LinkFragment) fragment).getFragments();
+				outputString.append(((TextFragment) subFragment).getText());
 			}
 			else
-				throw new IllegalStateException("Shouldn't have " + fragment.getClass().getName() + " in stack!");
-			for (Fragment subFragment : decoratedFragments)
 			{
-				if (subFragment instanceof LinkFragment || subFragment instanceof DecoratedFragment)
-				{
-					line.add(outputString.toString());
-					outputString.setLength(0);
-					line.add(subFragment);
-				}
-				else if (subFragment instanceof TextFragment)
-				{
-					outputString.append(((TextFragment) subFragment).getText());
-				}
-				else
-					throw new IllegalStateException("A new class must be handled here");
+				target.add(outputString.toString());
+				outputString.setLength(0);
+				target.add(subFragment);
 			}
-
-			line.add(outputString.toString());
-			outputString.setLength(0);
 		}
+
+		target.add(outputString.toString());
+		outputString.setLength(0);
 	}
 }

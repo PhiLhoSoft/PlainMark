@@ -108,22 +108,27 @@ public class BlockParser
 		}
 		else
 		{
-			TypedBlock parent = fetchParent(blockType);
-			if (parent != null)
+			processBlock(blockType, line);
+		}
+	}
+
+	private void processBlock(BlockType blockType, Line line)
+	{
+		TypedBlock parent = fetchParent(blockType);
+		if (parent != null)
+		{
+			Block child = line;
+			if (blockType == BlockType.LIST_ITEM_BULLET || blockType == BlockType.LIST_ITEM_NUMBER)
 			{
-				Block child = line;
-				if (blockType == BlockType.LIST_ITEM_BULLET || blockType == BlockType.LIST_ITEM_NUMBER)
-				{
-					child = new TypedBlock(blockType, line);
-				}
-				parent.add(child);
+				child = new TypedBlock(blockType, line);
 			}
-			else
-			{
-				popPreviousBlockIfNeeded(blockType);
-				TypedBlock block = new TypedBlock(blockType, line);
-				stack.push(block);
-			}
+			parent.add(child);
+		}
+		else
+		{
+			popPreviousBlockIfNeeded(blockType);
+			TypedBlock block = new TypedBlock(blockType, line);
+			stack.push(block);
 		}
 	}
 
@@ -170,7 +175,7 @@ public class BlockParser
 		while (StringWalker.isDigit(walker.charAt(offset + dn)))
 		{
 			dn++;
-			digits.append(ORDERED_LIST_DIGIT); // I don't expect more than 2 or 3 digits...
+			digits.append(ORDERED_LIST_DIGIT);
 		}
 		digits.append(".");
 		if (parsingParameters.isOrderedListSuffix(walker.charAt(offset + dn)) &&

@@ -3,6 +3,14 @@ package org.philhosoft.formattedtext.ast;
 
 public enum FragmentDecoration
 {
+	LINK
+	{
+		@Override
+		public <T> void accept(Visitor<T> visitor, T output)
+		{
+			visitor.visitLink(output);
+		}
+	},
 	STRONG // Bold
 	{
 		@Override
@@ -38,6 +46,7 @@ public enum FragmentDecoration
 
 	public interface Visitor<T>
 	{
+		void visitLink(T output);
 		void visitStrong(T output);
 		void visitEmphasis(T output);
 		void visitDelete(T output);

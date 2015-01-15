@@ -6,6 +6,11 @@ import org.philhosoft.formattedtext.ast.FragmentDecoration;
 public class RestoreFragmentVisitor implements FragmentDecoration.Visitor<StringBuilder>
 {
 	@Override
+	public void visitLink(StringBuilder sb)
+	{
+		sb.append(ParsingParameters.LINK_START_SIGN);
+	}
+	@Override
 	public void visitStrong(StringBuilder sb)
 	{
 		sb.append("*");

@@ -7,7 +7,7 @@ import java.util.List;
  * A line is created each time the parser finds a start of line.<br>
  * It contains a series of fragments, each with their own decoration, if any.
  */
-public class Line implements Block
+public class Line implements Block, Fragment
 {
 	private List<Fragment> fragments = new ArrayList<Fragment>();
 
@@ -24,15 +24,23 @@ public class Line implements Block
 	}
 
 	@Override
+	public FragmentDecoration getDecoration()
+	{
+		return null;
+	}
+
+	@Override
 	public void add(String text)
 	{
 		add(new TextFragment(text));
 	}
+	@Override
 	public void add(Fragment fragment)
 	{
 		fragments.add(fragment);
 	}
 
+	@Override
 	public List<Fragment> getFragments()
 	{
 		return fragments;

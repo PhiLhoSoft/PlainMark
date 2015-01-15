@@ -1,5 +1,7 @@
 package org.philhosoft.formattedtext.ast;
 
+import java.util.List;
+
 /**
  * Interface for fragments of text, decorated or not.
  * <p>
@@ -9,7 +11,12 @@ package org.philhosoft.formattedtext.ast;
  */
 public interface Fragment extends MarkedText
 {
+	FragmentDecoration getDecoration();
+
+	@Override
 	void add(String text);
 
-	void add(Fragment text);
+	void add(Fragment fragment);
+
+	List<Fragment> getFragments();
 }

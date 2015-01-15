@@ -42,43 +42,56 @@ public class SimpleStack<T> implements Iterable<T> // Doesn't implement Collecti
 	}
 
 	/**
-	 * Retrieves and removes the the first (top) element of this stack,
+	 * Retrieves and removes the first (top) element of this stack,
 	 * or <tt>null</tt> if this stack is empty.
 	 *
-	 * @return the first element element of this stack,
-	 *          or <tt>null</tt> if this stack is empty
+	 * @return the first element of this stack,
+	 *         or <tt>null</tt> if this stack is empty
 	 */
 	public T poll()
 	{
 		if (stack.isEmpty())
 			return null;
-		T top = peek();
-		stack.remove(stack.size() - 1);
+		T top = stack.remove(stack.size() - 1);
 		return top;
 	}
 
 	/**
-	 * Retrieves and removes the the last (bottom) element of this stack,
-     * or <tt>null</tt> if this stack is empty.
-     *
-	 * @return the last element element of this stack,
-     *          or <tt>null</tt> if this stack is empty
+	 * Retrieves and removes the last (bottom) element of this stack,
+	 * or <tt>null</tt> if this stack is empty.
+	 *
+	 * @return the last element of this stack,
+	 *         or <tt>null</tt> if this stack is empty
 	 */
 	public T pollLast()
 	{
 		if (stack.isEmpty())
 			return null;
-		T last = stack.get(0);
-		stack.remove(0);
+		T last = stack.remove(0);
 		return last;
+	}
+
+	/**
+	 * Retrieves and removes the nth element of this stack, starting from the first (top / head).
+     * Returns <tt>null</tt> if the position is negative or is deeper than this stack.
+     *
+	 * @return the nth element of this stack,
+     *         or <tt>null</tt> if this stack is not big enough
+	 */
+	public T pollAt(int position)
+	{
+		if (position < 0 || position > stack.size() - 1)
+			return null;
+		T element = stack.remove(stack.size() - 1 - position);
+		return element;
 	}
 
 	/**
 	 * Retrieves and removes the first (top) element of this stack,
 	 * or <tt>null</tt> if this stack is empty.
 	 *
-	 * @return the first element element of this stack,
-	 *          or <tt>null</tt> if this stack is empty
+	 * @return the first element of this stack,
+	 *         or <tt>null</tt> if this stack is empty
 	 */
 	public T peek()
 	{
@@ -91,14 +104,27 @@ public class SimpleStack<T> implements Iterable<T> // Doesn't implement Collecti
 	 * Retrieves the last (bottom) element of this stack,
      * or <tt>null</tt> if this stack is empty.
      *
-	 * @return the last element element of this stack,
-     *          or <tt>null</tt> if this stack is empty
+	 * @return the last element of this stack,
+     *         or <tt>null</tt> if this stack is not big enough
 	 */
 	public T peekLast()
 	{
 		if (stack.isEmpty())
 			return null;
 		return stack.get(0);
+	}
+	/**
+	 * Retrieves the nth element of this stack, starting from the first (top / head).
+     * Returns <tt>null</tt> if the position is negative or is deeper than this stack.
+     *
+	 * @return the nth element of this stack,
+     *         or <tt>null</tt> if this stack is empty
+	 */
+	public T peekAt(int position)
+	{
+		if (position < 0 || position > stack.size() - 1)
+			return null;
+		return stack.get(stack.size() - 1 - position);
 	}
 
 	public int size()
@@ -156,6 +182,8 @@ public class SimpleStack<T> implements Iterable<T> // Doesn't implement Collecti
 		@Override
 		public T next()
 		{
+			if (!hasNext())
+				throw new NoSuchElementException();
 			return stack.get(cursor--);
 		}
 

@@ -23,6 +23,18 @@ public class DecoratedFragment implements Fragment
 	}
 
 	@Override
+	public FragmentDecoration getDecoration()
+	{
+		return decoration;
+	}
+
+	@Override
+	public List<Fragment> getFragments()
+	{
+		return fragments;
+	}
+
+	@Override
 	public void add(String text)
 	{
 		add(new TextFragment(text));
@@ -31,15 +43,6 @@ public class DecoratedFragment implements Fragment
 	public void add(Fragment fragment)
 	{
 		fragments.add(fragment);
-	}
-
-	public FragmentDecoration getDecoration()
-	{
-		return decoration;
-	}
-	public List<Fragment> getFragments()
-	{
-		return fragments;
 	}
 
 	@Override

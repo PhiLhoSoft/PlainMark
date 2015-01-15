@@ -3,6 +3,12 @@ package org.philhosoft.formattedtext.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment representing a link with a text and a URL.
+ * <p>
+ * The text is a list of decorated or plain text fragments.<br>
+ * The URL is just a string.
+ */
 public class LinkFragment implements Fragment
 {
 	private List<Fragment> fragments = new ArrayList<Fragment>(); // source anchor
@@ -18,24 +24,31 @@ public class LinkFragment implements Fragment
 	}
 
 	@Override
+	public FragmentDecoration getDecoration()
+	{
+		return FragmentDecoration.LINK;
+	}
+
+	@Override
+	public List<Fragment> getFragments()
+	{
+		return fragments;
+	}
+
+	@Override
 	public void add(String text)
 	{
 		add(new TextFragment(text));
 	}
 	@Override
-	public void add(Fragment newFragment)
+	public void add(Fragment fragment)
 	{
-		fragments.add(newFragment);
+		fragments.add(fragment);
 	}
 
-	public void addURL(String url)
+	public void setURL(String url)
 	{
 		this.url = url;
-	}
-
-	public List<Fragment> getFragments()
-	{
-		return fragments;
 	}
 	public String getUrl()
 	{

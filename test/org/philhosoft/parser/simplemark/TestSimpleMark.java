@@ -45,7 +45,7 @@ public class TestSimpleMark
 
 		String css = readFile(Paths.get(CSS_FILE));
 
-		HTMLVisitor visitor = new HTMLVisitor();
+		HTMLVisitor visitor = new HTMLVisitor(2);
 		BlockType.Visitor<VisitorContext> blockStartVisitor = new HTMLBlockStartVisitor()
 		{
 			@Override
@@ -89,7 +89,8 @@ public class TestSimpleMark
 		};
 		visitor.setBlockVisitors(blockStartVisitor, blockEndVisitor);
 
-		String generatedHTML = SimpleMark.convertWithVisitor(markedText, visitor);
+		SimpleMark sm = new SimpleMark().setVisitor(visitor);
+		String generatedHTML = sm.convert(markedText);
 
 		generatedHTML = handleTables(generatedHTML);
 
@@ -98,8 +99,8 @@ public class TestSimpleMark
 		{
 			writer.write("<!doctype html>\n");
 			writer.write("<html>\n<head>\n");
-			writer.write("<meta charset='utf-8'>\n");
-			writer.write("<title>SimpleMark - Simple Humane Markup</title>\n");
+			writer.write("\t<meta charset='utf-8'>\n");
+			writer.write("\t<title>SimpleMark - Simple Humane Markup</title>\n");
 			writer.write("<style>\n");
 			writer.write(css);
 			writer.write("</style>\n");

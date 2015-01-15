@@ -1,7 +1,11 @@
 package org.philhosoft.formattedtext.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
- * A fragment with only text in it.<br>
+ * A fragment with only plain text in it.
+ * <p>
  * Leaf of a tree of decorated fragments.
  */
 public class TextFragment implements Fragment
@@ -14,13 +18,31 @@ public class TextFragment implements Fragment
 	}
 
 	@Override
-	public void add(String text)
+	public FragmentDecoration getDecoration()
 	{
-		this.text += text;
+		return null;
 	}
 
 	@Override
-	public void add(Fragment text)
+	public List<Fragment> getFragments()
+	{
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void add(String text)
+	{
+		if (this.text == null)
+		{
+			this.text = text;
+		}
+		else
+		{
+			this.text += text;
+		}
+	}
+	@Override
+	public void add(Fragment fragment)
 	{
 		throw new UnsupportedOperationException("Text fragment doesn't accept other fragments");
 	}

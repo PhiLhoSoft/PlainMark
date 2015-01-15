@@ -11,27 +11,45 @@ import org.philhosoft.parser.StringWalker;
 
 public class SimpleMark
 {
-	private SimpleMark()
+	private ParsingParameters parsingParameters = new ParsingParameters();
+	private MarkupVisitor<VisitorContext> visitor;
+
+	public SimpleMark()
 	{
 	}
 
+	/**
+	 * Convenience shortcut for quick conversion to HTML.
+	 */
 	public static String convertToHTML(String markupText)
 	{
-		HTMLVisitor visitor = new HTMLVisitor();
-		return convertWithVisitor(markupText, visitor);
+		return new SimpleMark().setVisitor(new HTMLVisitor()).convert(markupText);
 	}
 
+	/**
+	 * Convenience shortcut for quick, default conversion to plain text.
+	 */
 	public static String convertToPlainText(String markupText)
 	{
-		PlainTextVisitor visitor = new PlainTextVisitor();
-		return convertWithVisitor(markupText, visitor);
+		return new SimpleMark().setVisitor(new PlainTextVisitor()).convert(markupText);
 	}
 
-	public static String convertWithVisitor(String markupText, MarkupVisitor<VisitorContext> visitor)
+	public SimpleMark setVisitor(MarkupVisitor<VisitorContext> visitor)
+	{
+		this.visitor = visitor;
+		return this;
+	}
+	public SimpleMark setParsingParameters(ParsingParameters parsingParameters)
+	{
+		this.parsingParameters = parsingParameters;
+		return this;
+	}
+
+	public String convert(String markupText)
 	{
 		StringWalker walker = new StringWalker(markupText);
 
-		Block block = BlockParser.parse(walker);
+		Block block = BlockParser.parse(walker, parsingParameters);
 
 		ContextWithStringBuilder context = new ContextWithStringBuilder();
 		block.accept(visitor, context);
