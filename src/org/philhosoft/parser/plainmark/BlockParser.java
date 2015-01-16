@@ -5,6 +5,7 @@ import org.philhosoft.formattedtext.ast.Block;
 import org.philhosoft.formattedtext.ast.BlockType;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.TypedBlock;
+import org.philhosoft.parser.CharacterCheck;
 import org.philhosoft.parser.StringWalker;
 
 /**
@@ -158,7 +159,7 @@ public class BlockParser
 		{
 			if (walker.matchAt(offset, blockSign))
 			{
-				if (StringWalker.isWhitespace(walker.charAt(offset + blockSign.length())))
+				if (CharacterCheck.isWhitespace(walker.charAt(offset + blockSign.length())))
 					return blockSign;
 			}
 		}
@@ -167,19 +168,19 @@ public class BlockParser
 
 	private String checkNumberedListItem(int offset)
 	{
-		if (!StringWalker.isDigit(walker.charAt(offset)))
+		if (!CharacterCheck.isDigit(walker.charAt(offset)))
 			return null;
 
 		StringBuilder digits = new StringBuilder(ORDERED_LIST_DIGIT);
 		int dn = 1;
-		while (StringWalker.isDigit(walker.charAt(offset + dn)))
+		while (CharacterCheck.isDigit(walker.charAt(offset + dn)))
 		{
 			dn++;
 			digits.append(ORDERED_LIST_DIGIT);
 		}
 		digits.append(".");
 		if (parsingParameters.isOrderedListSuffix(walker.charAt(offset + dn)) &&
-				StringWalker.isWhitespace(walker.charAt(offset + dn + 1)))
+				CharacterCheck.isWhitespace(walker.charAt(offset + dn + 1)))
 			return digits.toString();
 
 		return null;

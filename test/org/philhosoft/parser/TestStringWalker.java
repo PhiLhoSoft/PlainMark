@@ -25,6 +25,9 @@ public class TestStringWalker
 		assertThat(walker.previous()).isEqualTo('\0');
 		assertThat(walker.current()).isEqualTo('S');
 		assertThat(walker.next()).isEqualTo('i');
+		assertThat(StringWalker.isValid(walker.previous())).isFalse();
+		assertThat(StringWalker.isValid(walker.current())).isTrue();
+		assertThat(StringWalker.isValid(walker.next())).isTrue();
 
 		assertThat(walker.match('S')).isTrue();
 		assertThat(walker.match('s')).isFalse();
@@ -44,6 +47,9 @@ public class TestStringWalker
 		assertThat(walker.previous()).isEqualTo('S');
 		assertThat(walker.current()).isEqualTo('i');
 		assertThat(walker.next()).isEqualTo('m');
+		assertThat(StringWalker.isValid(walker.previous())).isTrue();
+		assertThat(StringWalker.isValid(walker.current())).isTrue();
+		assertThat(StringWalker.isValid(walker.next())).isTrue();
 
 		assertThat(walker.match('i')).isTrue();
 		assertThat(walker.match('S')).isFalse();
@@ -89,6 +95,9 @@ public class TestStringWalker
 		assertThat(walker.previous()).isEqualTo('e');
 		assertThat(walker.current()).isEqualTo('\0');
 		assertThat(walker.next()).isEqualTo('\0');
+		assertThat(StringWalker.isValid(walker.previous())).isTrue();
+		assertThat(StringWalker.isValid(walker.current())).isFalse();
+		assertThat(StringWalker.isValid(walker.next())).isFalse();
 
 		assertThat(walker.match('x')).isFalse();
 		assertThat(walker.match('x', 'x')).isFalse();
@@ -104,6 +113,9 @@ public class TestStringWalker
 		assertThat(walker.previous()).isEqualTo('\0');
 		assertThat(walker.current()).isEqualTo('\0');
 		assertThat(walker.next()).isEqualTo('\0');
+		assertThat(StringWalker.isValid(walker.previous())).isFalse();
+		assertThat(StringWalker.isValid(walker.current())).isFalse();
+		assertThat(StringWalker.isValid(walker.next())).isFalse();
 
 		assertThat(walker.match('x')).isFalse();
 		assertThat(walker.match('x', 'x')).isFalse();

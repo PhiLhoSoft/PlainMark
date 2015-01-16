@@ -7,6 +7,7 @@ import org.philhosoft.formattedtext.ast.FragmentDecoration;
 import org.philhosoft.formattedtext.ast.Line;
 import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.ast.TextFragment;
+import org.philhosoft.parser.CharacterCheck;
 import org.philhosoft.parser.StringWalker;
 
 /**
@@ -170,7 +171,7 @@ public class FragmentParser
 		{
 			return handleLinkEnd();
 		}
-		
+
 		return false;
 	}
 
@@ -287,7 +288,7 @@ public class FragmentParser
 				// Deactivated if previous char is a letter or a digit
 				(Character.isLetterOrDigit(previous) ||
 				// Deactivated if next char is a space
-				StringWalker.isWhitespace(next)))
+				CharacterCheck.isWhitespace(next)))
 			return false;
 
 		// Is this an ending sign?
@@ -295,7 +296,7 @@ public class FragmentParser
 				// Deactivated if next char is a letter or a digit
 				(Character.isLetterOrDigit(next) ||
 				// Deactivated if previous char is a space
-				StringWalker.isWhitespace(previous)))
+				CharacterCheck.isWhitespace(previous)))
 			return false;
 
 		return true;
@@ -420,7 +421,7 @@ public class FragmentParser
 	private void handleURL(String urlPrefix)
 	{
 		walker.forward(urlPrefix.length());
-		if (!StringWalker.isAlphaNumerical(walker.current()))
+		if (!CharacterCheck.isAlphaNumerical(walker.current()))
 		{
 			// Probably just mentioning a raw schema
 			outputString.append(urlPrefix);
@@ -472,8 +473,7 @@ public class FragmentParser
 	private boolean walkTheURL()
 	{
 		int openedParentheses = 0;
-		char[] validURLChars = parsingParameters.getValidURLChars();
-		while (StringWalker.isAlphaNumerical(walker.current()) || walker.matchOneOf(validURLChars))
+		while (parsingParameters.isValidURLChar(walker.current()))
 		{
 			if (walker.current() == ParsingParameters.URL_START_SIGN)
 			{

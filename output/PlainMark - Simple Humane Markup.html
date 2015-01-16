@@ -104,8 +104,6 @@ td:first-child
 a Simple Humane Markup</h1>
 <p>The following specifies a text markup inspired by Markdown, but simplified to ease parsing, learning and usage.<br>
 It aims more at writing short comments than writing big, complex documents. For the latter, something like <a href='http://commonmark.org/'>CommonMark</a> is better suited.</p>
-<p>Note: I initially named this project SimpleMark, but a search shown at least another project of same name, with slightly different scope, but yet I prefered to avoid any collision...<br>
-So I chose a synonym. I elected "plain", in the sense of "characterized by simplicity: not complicated", according to Merriam-Webster.</p>
 <p>Newline characters do a line break in the rendering, equivalent to the <code>br</code> HTML tag.<br>
 Two consecutive newlines (an empty line) before a non-block line create a new paragraph, like the <code>p</code> tag in HTML.</p>
 <p>The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).<br>
@@ -150,8 +148,8 @@ If an explicit link is inside the link text of an explicit link, the external on
 <code>!</code> <code>$</code> <code>&amp;</code> <code>\</code>` <code>(</code> <code>)</code> <code>*</code> <code>+</code> <code>,</code> <code>;</code> <code>=</code> (reserved, sub-delims)<br>
 <code>%</code> (escape)</p>
 <h3>URL autolinking</h3>
-<p>URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.<br>
-The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).<br>
+<p>URLs starting with a common schema (http://, https://, ftp://, ftps://, sftp://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.<br>
+The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, PlainMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).<br>
 Parentheses in the URL are accepted if they are balanced, otherwise escape them: <code>%28</code> for <code>(</code>, <code>%29</code> for <code>)</code>.</p>
 <p>Markup signs are ignored while parsing an URL.<br>
 The link text will be the URL without the schema (to be shorter). If the URL is longer than a predefined (ajustable) length, it will be shortened with ellipsis.</p>
@@ -160,7 +158,7 @@ The link text will be the URL without the schema (to be shorter). If the URL is 
 <p>A line break is rendered by a simple line break, ie. in HTML a <code>br</code> tag.<br>
 An empty line (or several consecutive ones) separates paragraphs, rendered in HTML with a <code>p</code> tag.</p>
 <h2>Titles</h2>
-<p>SimpleMark has only three levels of title.<br>
+<p>PlainMark has only three levels of title.<br>
 In HTML rendering, they are not necessarily mapped to <code>h1</code> to <code>h3</code>. They might be mapped to <code>h3</code> to <code>h5</code>, for example, or even be just <code>div</code> s with their own classes.<br>
 These levels are denoted as a series of one to three sharp signs <code>#</code> at the start of the line, followed by a space. One <code>#</code> denotes the highest level, three is for the lowest one.<br>
 If two consecutive lines are titles with the same level, it makes a multi-line title (ie. with a line break inside).<br>
@@ -234,14 +232,15 @@ An unterminated code block goes down to the end of the text.</p>
 </code></pre>
 
 <h1>Parsing rules / implementation details</h1>
-<p>The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.</p>
-<p>When an URL is parsed (with another autonomous parser), special chars are ignored, until the end of the URL is detected. Details of the URL parsing is to follow.</p>
-<p>Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.</p>
 <p>Markup signs are:</p>
 <ul>
 <li>For fragments: ~ * _ - ` [ ] ( )</li>
 <li>For blocks (at start of line): # * - + digit (followed by dot) ` (followed by two others)</li>
 </ul>
+<p>Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.</p>
+<p>The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.</p>
+<p>A ParsingParameters class allows to customize a bit the parser, like which URL schemas are supported in auto-linking, what is the escape character, what is the length of shortened URLs when auto-linking, etc.</p>
+<p>The HTML renderer can get a parameter to define the tab length (tabs are converted to the given number of spaces, 4 by default).</p>
 <h1>How to use (User Manual)</h1>
 <p>Marked text is just plain text where line breaks are preserved, and some characters, in a given context, change the style of the rendered text.<br>
 There are two categories of markup signs: fragment markup and block markup.<br>
@@ -262,7 +261,7 @@ No-nonsense rules<br>
 A formula: x*x-y<br>
 Same formula: x * x - y<br>
 A constant: ESCAPE_SIGN</p>
-<p>URLs starting with http://, https://, ftp:// or ftps:// are automatically converted to links. Long URLs are shortened with ellipsis.<br>
+<p>URLs starting with http://, https://, ftp://, ftps:// or sftp:// are automatically converted to links. Long URLs are shortened with ellipsis.<br>
 Explicit URLs can be made like: [link text](valid_url). This allows to use other URL schemas and relative links.</p>
 <table><tr><td><code>http://stackoverflow.com</code></td><td><a href='http://stackoverflow.com'>stackoverflow.com</a></td></tr>
 <tr><td><code>http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages</code></td><td><a href='http://stackoverflow.com/questions/659227/compare-and-contrast-the-lightweight-markup-languages'>stackoverflow.com/questions/65…</a></td></tr>

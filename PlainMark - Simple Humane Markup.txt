@@ -67,8 +67,8 @@ Characters accepted raw in a link are:
 
 ### URL autolinking
 
-URLs starting with a common schema (http://, https://, ftp://, ftps://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.
-The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, SimpleMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
+URLs starting with a common schema (http://, https://, ftp://, ftps://, sftp://) are automatically turned into a link to that URL. For other schemas, use the explicit link form.
+The URL conversion stops on some characters, that should be escaped if they are part of the URL. Unlike some autolinking libraries, PlainMark doesn't attempt to guess an URL if it has no schema (ie. we don't do autolinking of google.com or www.example.com/whatever).
 Parentheses in the URL are accepted if they are balanced, otherwise escape them: `%28` for `(`, `%29` for `)`.
 
 Markup signs are ignored while parsing an URL.
@@ -85,7 +85,7 @@ An empty line (or several consecutive ones) separates paragraphs, rendered in HT
 
 ## Titles
 
-SimpleMark has only three levels of title.
+PlainMark has only three levels of title.
 In HTML rendering, they are not necessarily mapped to `h1` to `h3`. They might be mapped to `h3` to `h5`, for example, or even be just `div` s with their own classes.
 These levels are denoted as a series of one to three sharp signs `#` at the start of the line, followed by a space. One `#` denotes the highest level, three is for the lowest one.
 If two consecutive lines are titles with the same level, it makes a multi-line title (ie. with a line break inside).
@@ -165,15 +165,17 @@ Example:
 
 # Parsing rules / implementation details
 
-The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.
-
-When an URL is parsed (with another autonomous parser), special chars are ignored, until the end of the URL is detected. Details of the URL parsing is to follow.
-
-Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.
-
 Markup signs are:
 - For fragments: ~ * _ - ` [ ] ( )
 - For blocks (at start of line): # * - + digit (followed by dot) ` (followed by two others)
+
+Outside URLs, tilde characters allow to remove a special meaning to markup signs, anywhere they are found (including code fragments, excluding code blocks). If not followed by such markup sign, tildes are literal.
+
+The fragment (in-line) parser is autonomous, this allows to have an even simpler parser, eg. for writing short comments a la Stackoverflow.
+
+A ParsingParameters class allows to customize a bit the parser, like which URL schemas are supported in auto-linking, what is the escape character, what is the length of shortened URLs when auto-linking, etc.
+
+The HTML renderer can get a parameter to define the tab length (tabs are converted to the given number of spaces, 4 by default).
 
 
 # How to use (User Manual)
@@ -202,7 +204,7 @@ A formula: x*x-y
 Same formula: x * x - y
 A constant: ESCAPE_SIGN
 
-URLs starting with http://, https://, ftp:// or ftps:// are automatically converted to links. Long URLs are shortened with ellipsis.
+URLs starting with http://, https://, ftp://, ftps:// or sftp:// are automatically converted to links. Long URLs are shortened with ellipsis.
 Explicit URLs can be made like: ~[link text](valid_url). This allows to use other URL schemas and relative links.
 
 | `http://stackoverflow.com` | http://stackoverflow.com |
