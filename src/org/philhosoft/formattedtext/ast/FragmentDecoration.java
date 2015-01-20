@@ -1,6 +1,8 @@
 package org.philhosoft.formattedtext.ast;
 
-
+/**
+ * The various decorations a fragment can have.
+ */
 public enum FragmentDecoration
 {
 	LINK

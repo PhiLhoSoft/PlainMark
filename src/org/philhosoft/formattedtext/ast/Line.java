@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A line is created each time the parser finds a start of line.<br>
- * It contains a series of fragments, each with their own decoration, if any.
+ * A line is created each time the parser finds a start of line.
+ * <p>
+ * It contains a series of fragments, each with their own decoration, if any.<br>
+ * It is a bridge between fragments (it is a fragment grouping other fragments) and blocks (it is a leaf / base unit of block hierarchy).
  */
 public class Line implements Block, Fragment
 {

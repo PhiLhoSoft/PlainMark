@@ -1,6 +1,6 @@
 /**
- * Generic data structure (abstract syntax tree) for defining formatted text.<br>
- * <p>MarkedText is the general interface for these structures.<br>
+ * Generic data structure (abstract syntax tree) for defining formatted text.
+ * <p>MarkedText is the general interface for these structures.
  * <p>Fragment-based classes define styled (or raw) text within a line.<br>
  * They correspond, for example, to the span tag in HTML,
  * or other flow-based tags like em or strong.

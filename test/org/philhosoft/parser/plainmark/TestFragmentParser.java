@@ -11,8 +11,6 @@ import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
 import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.parser.StringWalker;
-import org.philhosoft.parser.plainmark.FragmentParser;
-import org.philhosoft.parser.plainmark.ParsingParameters;
 
 
 public class TestFragmentParser
@@ -635,6 +633,31 @@ public class TestFragmentParser
 	}
 
 	@Test
+	public void testURL_explicit_simpleAtStart()
+	{
+		StringWalker walker = new StringWalker("[link](http://www.example.com) at start");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("link", "http://www.example.com");
+		expected.add(lf);
+		expected.add(" at start");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_simpleAtEnd()
+	{
+		StringWalker walker = new StringWalker("Finishing with [link](http://www.example.com)");
+
+		Line expected = new Line("Finishing with ");
+		LinkFragment lf = new LinkFragment("link", "http://www.example.com");
+		expected.add(lf);
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
 	public void testURL_explicit_escaped()
 	{
 		StringWalker walker = new StringWalker("I ~[link](http://www.example.com) to a URL");
@@ -659,6 +682,20 @@ public class TestFragmentParser
 		lf.add(" a link");
 		expected.add(lf);
 		expected.add(" to a URL");
+
+		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_explicit_withIntertwinedDecoration()
+	{
+		StringWalker walker = new StringWalker("Link *with [intertwined* markup](there)");
+
+		Line expected = new Line("Link ");
+		expected.add("*with ");
+		LinkFragment lf = new LinkFragment("intertwined* markup", "there");
+		expected.add(lf);
+		expected.add("");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}
@@ -791,16 +828,14 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_explicit_notLink()
+	public void testURL_explicit_empty()
 	{
-		StringWalker walker = new StringWalker("[Link [brackets] text]");
+		StringWalker walker = new StringWalker("Empty []() link");
 
-		Line expected = new Line("[");
-		expected.add("Link ");
-		expected.add("[");
-		expected.add("brackets");
-		expected.add("] text");
-		expected.add("]");
+		Line expected = new Line("Empty ");
+		LinkFragment lf = new LinkFragment();
+		expected.add(lf);
+		expected.add(" link");
 
 		assertThat(FragmentParser.parse(walker)).isEqualTo(expected);
 	}

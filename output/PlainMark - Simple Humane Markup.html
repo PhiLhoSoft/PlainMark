@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset='utf-8'>
@@ -109,7 +109,7 @@ Two consecutive newlines (an empty line) before a non-block line create a new pa
 <p>The markup uses Ascii characters in a given context to apply a special style (eg. HTML markup + CSS) to whole lines of text (blocks, div-like in HTML) or to fragments of text (span-like in HTML).<br>
 These special characters can loose their meaning in some context, and can always be escaped with the tilde <code>~</code> sign preceding them.<br>
 If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.</p>
-<p>Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped.</p>
+<p>Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped. They are always followed by a space or a tab. Additional whitespace before the start of the text is ignored.</p>
 <p>Fragment markup characters loose their meaning if surrounded by spaces or by letters or digits.<br>
 They go by pairs, correctly nested. A single markup sign (without a closing one before the end of the line) looses its meaning (is kept literal).<br>
 Currently, there is an exception for an unterminated code fragment: it runs to the end of the line (limitation of the parser).</p>
@@ -164,10 +164,12 @@ These levels are denoted as a series of one to three sharp signs <code>#</code> 
 If two consecutive lines are titles with the same level, it makes a multi-line title (ie. with a line break inside).<br>
 Titles should be rendered with a bolder font, with size bigger than main text, and some vertical space before and after the line.</p>
 <p>Example:<br>
-<code>## Second level title</code></p>
+<code>## Second level title</code><br>
+<code>### Third level title</code><br>
+<code>### on two lines</code></p>
 <h2>Lists</h2>
-<p>Unordered lists are made with lines starting with a dash <code>-</code> or a plus <code>+</code> or a star <code>*</code>, followed by a space.<br>
-Ordered lists  are made with lines starting with numbers (several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.<br>
+<p>Unordered lists are made with lines starting with a dash <code>-</code> or a plus <code>+</code> or a star <code>*</code>, followed by a space<br>
+Ordered lists are made with lines starting with numbers (one or several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.<br>
 No nesting is handled. A list stops with the first non-list line, so there can be two distinct consecutive lists if separated by an empty line.<br>
 The list sign of unordered lists isn't relevant, they render to the same kind of item.</p>
 <p>* Item<br>
@@ -217,7 +219,7 @@ becomes:</p>
 </ol>
 <h2>Code blocks</h2>
 <p>Like in GitHub, a series of three backticks <code>```</code> on their own line renders all the following lines as code (in a <code>pre</code> block in HTML, with <code>code</code> style), until another line with <code>```</code> is met.<br>
-Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).<br>
+Between these marks, all lines are rendered literally, no markup interpretation is attempted (not even tilde escape), empty lines are kept as is, no whitespace is skipped (indentation is preserved).<br>
 The code block signs <strong>must</strong> start on the first column.<br>
 An unterminated code block goes down to the end of the text.</p>
 <p>Example:</p>
@@ -246,6 +248,7 @@ An unterminated code block goes down to the end of the text.</p>
 There are two categories of markup signs: fragment markup and block markup.<br>
 Fragments are within a line, they change the style of a portion of the line.<br>
 Blocks extends over one or more consecutive lines. They change the style of the whole line(s).</p>
+<p>Markup signs can be escaped with the tilde <code>~</code> sign. A tilde preceding a non-markup sign is kept literally.</p>
 <h3>Fragment markup</h3>
 <table><tr><td>This is *strong* text</td><td>This is <strong>strong</strong> text</td></tr>
 <tr><td>This is _emphasized_ text</td><td>This is <em>emphasized</em> text</td></tr>
@@ -334,7 +337,6 @@ Where *markup* is ignored
 </code></pre>
 
 </td></tr></table>
-<p>Markup signs can be escaped with the tilde ~ sign. A tilde preceding a non-markup sign is kept literally.</p>
 <h2>The nitty-gritty details</h2>
 <p>As said, line breaks are preserved (in HTML, they render as <code>&lt;br&gt;</code> tags).<br>
 Two consecutive line breaks before a non-block line result in a paragraph (<code>&lt;p&gt;</code> tag in HTML).</p>

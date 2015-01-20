@@ -1,7 +1,7 @@
 package org.philhosoft.formattedtext.ast;
 
 /**
- * Interface for blocks and fragments of text.
+ * Text with, or without decoration / type, organized in fragments of line, lines, grouped in blocks.
  */
 public interface MarkedText
 {

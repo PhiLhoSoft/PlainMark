@@ -97,7 +97,7 @@ public class TestPlainMark
 		Path outputPath = Paths.get(OUTPUT_PATH, TEST_FILE + ".html");
 		try (BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8))
 		{
-			writer.write("<!doctype html>\n");
+			writer.write("<!DOCTYPE html>\n");
 			writer.write("<html>\n<head>\n");
 			writer.write("\t<meta charset='utf-8'>\n");
 			writer.write("\t<title>PlainMark - Simple Humane Markup</title>\n");

@@ -1,5 +1,8 @@
 package org.philhosoft.formattedtext.ast;
 
+/**
+ * The various types of blocks.
+ */
 public enum BlockType
 {
 	DOCUMENT

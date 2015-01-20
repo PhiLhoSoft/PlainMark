@@ -11,7 +11,7 @@ The markup uses Ascii characters in a given context to apply a special style (eg
 These special characters can loose their meaning in some context, and can always be escaped with the tilde `~~` sign preceding them.
 If tilde precedes a non-markup character, it is kept literal. It can also be doubled to figure a literal tilde.
 
-Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped.
+Block markup characters are defined at the start of a line, regardless of initial spaces. These initial spaces are just skipped. They are always followed by a space or a tab. Additional whitespace before the start of the text is ignored.
 
 Fragment markup characters loose their meaning if surrounded by spaces or by letters or digits.
 They go by pairs, correctly nested. A single markup sign (without a closing one before the end of the line) looses its meaning (is kept literal).
@@ -93,12 +93,14 @@ Titles should be rendered with a bolder font, with size bigger than main text, a
 
 Example:
 `## Second level title`
+`### Third level title`
+`### on two lines`
 
 
 ## Lists
 
-Unordered lists are made with lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space.
-Ordered lists  are made with lines starting with numbers (several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
+Unordered lists are made with lines starting with a dash `-` or a plus `+` or a star `*`, followed by a space
+Ordered lists are made with lines starting with numbers (one or several digits) followed by a dot and a space. The numbers are actually ignored, numbering is done automatically from 1.
 No nesting is handled. A list stops with the first non-list line, so there can be two distinct consecutive lists if separated by an empty line.
 The list sign of unordered lists isn't relevant, they render to the same kind of item.
 
@@ -146,7 +148,7 @@ becomes:
 ## Code blocks
 
 Like in GitHub, a series of three backticks `~`~`~`` on their own line renders all the following lines as code (in a `pre` block in HTML, with `code` style), until another line with `~`~`~`` is met.
-Between these marks, all lines are rendered literally, no markup interpretation is attempted, empty lines are kept as is, no whitespace is skipped (indentation is preserved).
+Between these marks, all lines are rendered literally, no markup interpretation is attempted (not even tilde escape), empty lines are kept as is, no whitespace is skipped (indentation is preserved).
 The code block signs *must* start on the first column.
 An unterminated code block goes down to the end of the text.
 
@@ -184,6 +186,8 @@ Marked text is just plain text where line breaks are preserved, and some charact
 There are two categories of markup signs: fragment markup and block markup.
 Fragments are within a line, they change the style of a portion of the line.
 Blocks extends over one or more consecutive lines. They change the style of the whole line(s).
+
+Markup signs can be escaped with the tilde `~~` sign. A tilde preceding a non-markup sign is kept literally.
 
 ### Fragment markup
 
@@ -280,8 +284,6 @@ Where *markup* is ignored
     But _indentation_ is preserved
 ```
 |||
-
-Markup signs can be escaped with the tilde ~ sign. A tilde preceding a non-markup sign is kept literally.
 
 ## The nitty-gritty details
 
