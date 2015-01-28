@@ -11,6 +11,7 @@ import org.philhosoft.formattedtext.ast.LinkFragment;
 import org.philhosoft.formattedtext.format.ContextWithStringBuilder;
 import org.philhosoft.formattedtext.format.HTMLVisitor;
 import org.philhosoft.parser.StringWalker;
+import org.philhosoft.parser.plainmark.ParsingParameters.LinkEllipsisPlacement;
 
 
 public class TestFragmentParser
@@ -559,7 +560,22 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_implicit_long()
+	public void testURL_implicit_longNoLimit()
+	{
+		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
+
+		Line expected = new Line();
+		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/path/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
+		expected.add(lf);
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(0);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_end_long()
 	{
 		StringWalker walker = new StringWalker("The http://www.example.com/foo/index.html#fragment becomes a URL");
 
@@ -572,7 +588,7 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_implicit_longer()
+	public void testURL_implicit_end_longer()
 	{
 		StringWalker walker = new StringWalker("URL in *bold http://www.example.com/foo-bar/~name/?a=sp+ace&b=%49 text*");
 
@@ -590,7 +606,7 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_implicit_longerShortened()
+	public void testURL_implicit_end_longerShortened()
 	{
 		StringWalker walker = new StringWalker("URL at end: http://www.example.com/foo-bar/~name/somewhere.html");
 
@@ -605,16 +621,105 @@ public class TestFragmentParser
 	}
 
 	@Test
-	public void testURL_implicit_longerNoLimit()
+	public void testURL_implicit_start_long()
 	{
-		StringWalker walker = new StringWalker("http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
+		StringWalker walker = new StringWalker("The http://www.example.com/foo/important+blog+post+title becomes a URL");
 
-		Line expected = new Line();
-		LinkFragment lf = new LinkFragment("www.example.com/foo-bar/~name/path/somewhere.html#insideLink", "http://www.example.com/foo-bar/~name/path/somewhere.html#insideLink");
+		Line expected = new Line("The ");
+		LinkFragment lf = new LinkFragment("…/foo/important+blog+post+title", "http://www.example.com/foo/important+blog+post+title");
+		expected.add(lf);
+		expected.add(" becomes a URL");
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.START);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_start_longer()
+	{
+		StringWalker walker = new StringWalker("URL in *bold http://www.example.com/foo/important+blog+post+title text*");
+
+		Line expected = new Line("URL in ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "bold ");
+		LinkFragment lf = new LinkFragment("[...]le.com/foo/important+blog+post+title", "http://www.example.com/foo/important+blog+post+title");
+		df.add(lf);
+		df.add(" text");
+		expected.add(df);
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(36);
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.START);
+		parsingParameters.setEllipsis("[...]");
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_start_longerShortened()
+	{
+		StringWalker walker = new StringWalker("URL at end: http://www.example.com/foo/important+blog+post+title");
+
+		Line expected = new Line("URL at end: ");
+		LinkFragment lf = new LinkFragment("…tant+blog+post+title", "http://www.example.com/foo/important+blog+post+title");
 		expected.add(lf);
 
 		ParsingParameters parsingParameters = new ParsingParameters();
-		parsingParameters.setMaxLinkLength(0);
+		parsingParameters.setMaxLinkLength(20);
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.START);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_middle_long()
+	{
+		StringWalker walker = new StringWalker("The http://somesite.org/foo/bar/some-blog-title becomes a URL");
+
+		Line expected = new Line("The ");
+		LinkFragment lf = new LinkFragment("somesite.org/fo…some-blog-title", "http://somesite.org/foo/bar/some-blog-title");
+		expected.add(lf);
+		expected.add(" becomes a URL");
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.MIDDLE);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_middle_longer()
+	{
+		StringWalker walker = new StringWalker("URL in *bold http://somesite.org/foo/bar/some-blog-title text*");
+
+		Line expected = new Line("URL in ");
+		DecoratedFragment df = new DecoratedFragment(FragmentDecoration.STRONG, "bold ");
+		LinkFragment lf = new LinkFragment("somesite.org/foo/…ar/some-blog-title", "http://somesite.org/foo/bar/some-blog-title");
+		df.add(lf);
+		df.add(" text");
+		expected.add(df);
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(35);
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.MIDDLE);
+
+		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testURL_implicit_middle_longerShortened()
+	{
+		StringWalker walker = new StringWalker("URL at end: http://somesite.org/foo/bar/some-blog-title");
+
+		Line expected = new Line("URL at end: ");
+		LinkFragment lf = new LinkFragment("somesite.o...blog-title", "http://somesite.org/foo/bar/some-blog-title");
+		expected.add(lf);
+
+		ParsingParameters parsingParameters = new ParsingParameters();
+		parsingParameters.setMaxLinkLength(20);
+		parsingParameters.setLinkEllipsisPlacement(LinkEllipsisPlacement.MIDDLE);
+		parsingParameters.setEllipsis("...");
 
 		assertThat(FragmentParser.parse(walker, parsingParameters)).isEqualTo(expected);
 	}

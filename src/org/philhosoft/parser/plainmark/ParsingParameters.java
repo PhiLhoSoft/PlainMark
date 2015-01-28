@@ -22,6 +22,8 @@ public class ParsingParameters
 	public static final char URL_START_SIGN = '(';
 	public static final char URL_END_SIGN = ')';
 
+	public enum LinkEllipsisPlacement { START, MIDDLE, END };
+
 	private static final char ORDERED_LIST_SUFFIX = '.';
 
 	private static final String[] DEFAULT_URL_PREFIXES =
@@ -57,6 +59,7 @@ public class ParsingParameters
 
 	private int maxLinkLength = 30;
 	private String ellipsis = "\u2026";
+	private LinkEllipsisPlacement linkEllipsisPlacement = LinkEllipsisPlacement.END;
 
 	private List<String> urlPrefixes = new ArrayList<String>();
 	{
@@ -78,6 +81,7 @@ public class ParsingParameters
 	{
 		return maxLinkLength;
 	}
+	/** Sets the maximum length of URL in the display part of the links. If zero (or less), there is no limit. Default at 30. */
 	public void setMaxLinkLength(int maxLinkLength)
 	{
 		this.maxLinkLength = maxLinkLength;
@@ -86,9 +90,29 @@ public class ParsingParameters
 	{
 		return ellipsis;
 	}
+	/**
+	 * Defines the string to use to mark the ellipsis / truncation of the display part of the raw URLs.
+	 * <p>
+	 * Default at … character.<br>
+	 * Note that the final length of the displayed URL will be maxLinkLength + length of this ellipsis.
+	 */
 	public void setEllipsis(String ellipsis)
 	{
 		this.ellipsis = ellipsis;
+	}
+	public LinkEllipsisPlacement getLinkEllipsisPlacement()
+	{
+		return linkEllipsisPlacement;
+	}
+	/** Indicates where to put the ellipsis / cut the URL.
+	 * <p>
+	 * At <code>START</code> (domain name unimportant, eg. if always the same),
+	 * <code>MIDDLE</code> (keep domain name (most of it) and name of the page)
+	 * or <code>END</code> (classical, remove the query params).
+	 */
+	public void setLinkEllipsisPlacement(LinkEllipsisPlacement linkEllipsisPlacement)
+	{
+		this.linkEllipsisPlacement = linkEllipsisPlacement;
 	}
 	public List<String> getUrlPrefixes()
 	{

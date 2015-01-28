@@ -459,9 +459,22 @@ public class FragmentParser
 	{
 		String text = url;
 		int maxLinkLength = parsingParameters.getMaxLinkLength();
-		if (maxLinkLength  > 0 && maxLinkLength < text.length())
+		int textLength = text.length();
+		if (maxLinkLength > 0 && textLength > maxLinkLength)
 		{
-			text = text.substring(0, maxLinkLength) + parsingParameters.getEllipsis();
+			switch (parsingParameters.getLinkEllipsisPlacement())
+			{
+			case END:
+				text = text.substring(0, maxLinkLength) + parsingParameters.getEllipsis();
+				break;
+			case START:
+				text = parsingParameters.getEllipsis() + text.substring(textLength - maxLinkLength, textLength);
+				break;
+			case MIDDLE:
+				text = text.substring(0, maxLinkLength / 2) + parsingParameters.getEllipsis() +
+					text.substring(textLength - maxLinkLength + maxLinkLength / 2, textLength);
+				break;
+			}
 		}
 		LinkFragment lf = new LinkFragment(text, urlPrefix + outputString.toString());
 		return lf;
